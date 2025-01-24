@@ -137,6 +137,25 @@ function checkForChangedIdentifiers(playerIds, bannedIds)
 end
 
 
+
+RegisterServerEvent('ox_lib:notifyAll')
+AddEventHandler('ox_lib:notifyAll', function(data)
+    TriggerClientEvent('ox_lib:notify', -1, data)
+end)
+
+RegisterServerEvent("EasyAdmin:announcement")
+AddEventHandler("EasyAdmin:announcement", function(message)
+    -- Broadcast the announcement to all players
+    TriggerClientEvent("ox_lib:notifyAll", -1, {
+        title = "Announcement",
+        description = message,
+        type = "info"
+    })
+end)
+
+
+
+
 AddEventHandler('playerDropped', function (reason)
 	if OnlineAdmins[source] then
 		OnlineAdmins[source] = nil
