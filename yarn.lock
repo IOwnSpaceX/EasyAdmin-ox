@@ -53,10 +53,10 @@
     tslib "^2.5.0"
     undici "^5.22.0"
 
-"@discordjs/util@0.3.1", "@discordjs/util@^0.2.0", "@discordjs/util@^0.3.0", "@discordjs/util@^0.3.1", "@discordjs/util@^1.0.0":
-  version "0.3.1"
-  resolved "https://registry.yarnpkg.com/@discordjs/util/-/util-0.3.1.tgz#4e8737e1dcff7e9f5eccc3116fb44755b65b1e97"
-  integrity sha512-HxXKYKg7vohx2/OupUN/4Sd02Ev3PBJ5q0gtjdcvXb0ErCva8jNHWfe/v5sU3UKjIB/uxOhc+TDOnhqffj9pRA==
+"@discordjs/util@1.1.1", "@discordjs/util@^0.2.0", "@discordjs/util@^0.3.0", "@discordjs/util@^0.3.1", "@discordjs/util@^1.0.0":
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/@discordjs/util/-/util-1.1.1.tgz#bafcde0faa116c834da1258d78ec237080bbab29"
+  integrity sha512-eddz6UnOBEB1oITPinyrB2Pttej49M9FZQY8NxgEvc3tq6ZICZ19m70RsmzRdDHk80O9NoYN/25AqJl8vPVf/g==
 
 "@discordjs/ws@0.8.1", "@discordjs/ws@^0.8.2", "@discordjs/ws@^1.0.0":
   version "0.8.1"
