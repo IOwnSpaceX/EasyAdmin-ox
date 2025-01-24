@@ -17,6 +17,8 @@ Easyadmin you can find the github link to Easyadmin here: https://github.com/Blu
 💻 **Installation**
 This is a drag and drop resource. Open your `server.cfg` file, ensure/start EasyAdmin, then drag and drop the resource and it should set itself up.
 
-![image](https://github.com/user-attachments/assets/838f031a-c656-4494-92c9-da67e9770b75)
-![image](https://github.com/user-attachments/assets/ff205abe-86d9-4052-a489-a0fc2b48c657)
-![image](https://github.com/user-attachments/assets/75a47afb-fe15-4d76-9d25-28c4296e8e76)
+![image](https://github.com/user-attachments/assets/df4cf28b-1893-45ec-aa5b-be286b5a9008)
+![image](https://github.com/user-attachments/assets/c11c4566-c22d-4e55-a485-9995046f88c1)
+![image](https://github.com/user-attachments/assets/9906da84-2af1-44a9-8435-cf39fc1efe5c)
+
+
