@@ -15,6 +15,8 @@ Easyadmin you can find the github link to Easyadmin here: https://github.com/Blu
 
 
 💻 **Installation**
+**OX_LIB is a dependecy make sure that is started before this resource!**
+
 This is a drag and drop resource. Open your `server.cfg` file, ensure/start EasyAdmin, then drag and drop the resource and it should set itself up.
 
 ![image](https://github.com/user-attachments/assets/df4cf28b-1893-45ec-aa5b-be286b5a9008)
