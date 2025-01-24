@@ -32,12 +32,12 @@
     "@vladfrangu/async_event_emitter" "^2.2.1"
     discord-api-types "^0.37.41"
 
-"@discordjs/formatters@0.3.1", "@discordjs/formatters@^0.3.1":
-  version "0.3.1"
-  resolved "https://registry.yarnpkg.com/@discordjs/formatters/-/formatters-0.3.1.tgz#81393cf25e6e3223361061629752ea727475e842"
-  integrity sha512-M7X4IGiSeh4znwcRGcs+49B5tBkNDn4k5bmhxJDAUhRxRHTiFAOTVUNQ6yAKySu5jZTnCbSvTYHW3w0rAzV1MA==
+"@discordjs/formatters@0.6.0", "@discordjs/formatters@^0.3.1":
+  version "0.6.0"
+  resolved "https://registry.yarnpkg.com/@discordjs/formatters/-/formatters-0.6.0.tgz#9a4ca075ab16a4823da9258bc5c39f06a2519235"
+  integrity sha512-YIruKw4UILt/ivO4uISmrGq2GdMY6EkoTtD0oS0GvkJFRZbTSdPhzYiUILbJ/QslsvC9H9nTgGgnarnIl4jMfw==
   dependencies:
-    discord-api-types "^0.37.41"
+    discord-api-types "^0.37.114"
 
 "@discordjs/rest@1.7.1", "@discordjs/rest@^1.7.0", "@discordjs/rest@^1.7.1", "@discordjs/rest@^2.0.0":
   version "1.7.1"
@@ -315,7 +315,7 @@ discord-api-types@0.37.115:
   resolved "https://registry.yarnpkg.com/discord-api-types/-/discord-api-types-0.37.115.tgz#b7f1675efe9ba047bd6ddc9785551d015ae14939"
   integrity sha512-ivPnJotSMrXW8HLjFu+0iCVs8zP6KSliMelhr7HgcB2ki1QzpORkb26m71l1pzSnnGfm7gb5n/VtRTtpw8kXFA==
 
-discord-api-types@^0.37.38, discord-api-types@^0.37.41, discord-api-types@^0.37.50:
+discord-api-types@^0.37.114, discord-api-types@^0.37.38, discord-api-types@^0.37.41, discord-api-types@^0.37.50:
   version "0.37.117"
   resolved "https://registry.yarnpkg.com/discord-api-types/-/discord-api-types-0.37.117.tgz#ac4bccf3e025678eb2fc55b911e470504489cda0"
   integrity sha512-d+Z6RKd7v3q22lsil7yASucqMfVVV0s0XSqu3cw7kyHVXiDO/mAnqMzqma26IYnIm2mk3TlupYJDGrdL908ZKA==
