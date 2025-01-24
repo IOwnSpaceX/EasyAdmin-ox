@@ -2,14 +2,14 @@
 
 module.exports = {
 	data: new SlashCommandBuilder()
-		.setName('add_ace')
-		.setDescription('Adds a permission to a group, saves into easyadmin_permissions.cfg'),
+		.setName('remove_ace')
+		.setDescription('Removes a permission from a group, saves into easyadmin_permissions.cfg'),
 	async execute(interaction, exports) {
 		var timestamp = Date.now()
 
 		const modal = new ModalBuilder()
-			.setCustomId('addaceModal'+timestamp)
-			.setTitle('Add ACE')
+			.setCustomId('removeaceModal'+timestamp)
+			.setTitle('Remove ACE')
 
 		const groupName = new TextInputBuilder()
 			.setCustomId('groupName')
@@ -36,18 +36,17 @@ module.exports = {
 
 		interaction.showModal(modal)
 
-		const filter = (interaction) => interaction.customId === 'addaceModal'+timestamp
+		const filter = (interaction) => interaction.customId === 'removeaceModal'+timestamp
 		interaction.awaitModalSubmit({ filter, time: 120000 })
 			.then(async (interaction) => {
 				var group = interaction.fields.getTextInputValue('groupName')
 				var permission = interaction.fields.getTextInputValue('permission')
-				var query = `add_ace ${group} ${permission} allow`
-				exports[EasyAdmin].AddToFile('easyadmin_permissions.cfg', query)
+				var query = `remove_ace ${group} ${permission} allow`
+				exports[EasyAdmin].RemoveFromFile('easyadmin_permissions.cfg', `add_ace ${group} ${permission} allow`)
 	
 				ExecuteCommand(query)
 	
 				interaction.reply(`\`${query}\` has been executed and saved.`)
-
 			}).catch(async () => {}) // silently catch error, happens if the form times out
 	},
 }
