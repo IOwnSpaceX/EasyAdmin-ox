@@ -145,12 +145,14 @@ end)
 
 RegisterServerEvent("EasyAdmin:announcement")
 AddEventHandler("EasyAdmin:announcement", function(message)
-    -- Broadcast the announcement to all players
-    TriggerClientEvent("ox_lib:notifyAll", -1, {
-        title = "Announcement",
-        description = message,
-        type = "info"
-    })
+    if message and message ~= "" then
+        -- Broadcast the announcement to all players
+        TriggerClientEvent("ox_lib:notify", -1, {
+            title = "Announcement",
+            description = message,
+            type = "info"
+        })
+    end
 end)
 
 
