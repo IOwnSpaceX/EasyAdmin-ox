@@ -530,16 +530,23 @@ Citizen.CreateThread(function()
 	end
 	exports('slapPlayer', slapPlayer)
 	
-	RegisterServerEvent("EasyAdmin:SlapPlayer", function(playerId,slapAmount)
+	RegisterServerEvent("EasyAdmin:SlapPlayer", function(playerId, slapAmount)
 		if DoesPlayerHavePermission(source, "player.slap") and CheckAdminCooldown(source, "slap") and slapPlayer(playerId, slapAmount) then
 			SetAdminCooldown(source, "slap")
 			PrintDebugMessage("Player "..getName(source,true).." slapped "..getName(playerId,true).." for "..slapAmount.." HP", 3)
 			local preferredWebhook = detailNotification ~= "false" and detailNotification or moderationNotification
-			SendWebhookMessage(preferredWebhook,string.format(GetLocalisedText("adminslappedplayer"), getName(source, false, true), getName(playerId, true, true), slapAmount), "slap", 16777214)
+			SendWebhookMessage(preferredWebhook, string.format(GetLocalisedText("adminslappedplayer"), getName(source, false, true), getName(playerId, true, true), slapAmount), "slap", 16777214)
 		elseif CachedPlayers[playerId].immune then
-			TriggerClientEvent("EasyAdmin:showNotification", source, GetLocalisedText("adminimmune"))
+		
+			local msg = GetLocalisedText("adminimmune")
+			TriggerClientEvent('ox_lib:notify', source, {
+				title = "Admin Action",  
+				description = msg,           
+				type = 'error'           
+			})
 		end
 	end)
+	
 	
 
 	function freezePlayer(playerId, toggle)
@@ -570,7 +577,12 @@ Citizen.CreateThread(function()
 				PrintDebugMessage("Player "..getName(source,true).." unfroze "..getName(playerId,true), 3)
 			end
 		elseif CachedPlayers[playerId].immune then
-			TriggerClientEvent("EasyAdmin:showNotification", source, GetLocalisedText("adminimmune"))
+			local msg = GetLocalisedText("adminimmune")
+			TriggerClientEvent('ox_lib:notify', source, {
+				title = "Admin Action",  
+				description = msg,           
+				type = 'error'           
+			})
 		end
 	end)
 	
@@ -628,62 +640,82 @@ Citizen.CreateThread(function()
 	
 	RegisterServerEvent("EasyAdmin:mutePlayer", function(playerId)
 		local src = source
-		if DoesPlayerHavePermission(src,"player.mute") and not CachedPlayers[playerId].immune and CheckAdminCooldown(source, "mute") then
-			SetAdminCooldown(source, "mute")
+		if DoesPlayerHavePermission(src, "player.mute") and not CachedPlayers[playerId].immune and CheckAdminCooldown(src, "mute") then
+			SetAdminCooldown(src, "mute")
 			local muted = mutePlayer(playerId, not MutedPlayers[playerId])
-
+	
 			if muted then
 				if MutedPlayers[playerId] then
+					-- Player Muted Notification
 					TriggerClientEvent("ox_lib:notify", src, {
-						title = "Player Muted", 
+						title = "Player Muted",
 						description = getName(playerId) .. " " .. GetLocalisedText("playermuted"),
 						type = "success"
 					})
-					SendWebhookMessage(moderationNotification,string.format(GetLocalisedText("adminmutedplayer"), getName(source, false, true), getName(playerId, false, true)), "mute", 16777214)
+					SendWebhookMessage(moderationNotification, string.format(GetLocalisedText("adminmutedplayer"), getName(src, false, true), getName(playerId, false, true)), "mute", 16777214)
 				else
+					-- Player Unmuted Notification
 					TriggerClientEvent("ox_lib:notify", src, {
-						title = "Player Unmuted", 
+						title = "Player Unmuted",
 						description = getName(playerId) .. " " .. GetLocalisedText("playerunmuted"),
 						type = "success"
 					})
-					SendWebhookMessage(moderationNotification,string.format(GetLocalisedText("adminunmutedplayer"), getName(source, false, false), getName(playerId, false, true)), "mute", 16777214)
+					SendWebhookMessage(moderationNotification, string.format(GetLocalisedText("adminunmutedplayer"), getName(src, false, false), getName(playerId, false, true)), "mute", 16777214)
 				end
 			else
-				-- todo: handle false retval
+				-- Handle failure (e.g., invalid state)
+				TriggerClientEvent("ox_lib:notify", src, {
+					title = "Action Failed",
+					description = "Unable to mute/unmute " .. getName(playerId),
+					type = "error"
+				})
 			end
+		elseif CachedPlayers[playerId].immune then
+			-- Notification for immune players
+			TriggerClientEvent("ox_lib:notify", src, {
+				title = "Admin Action",
+				description = getName(playerId) .. " is immune and cannot be muted.",
+				type = "error"
+			})
 		end
 	end)
-
+	
 	function mutePlayer(playerId, toggle)
-		if not CachedPlayers[playerId].immune then 
-			if toggle and not MutedPlayers[playerId] then
-				MutedPlayers[playerId] = true
-				if MumbleSetPlayerMuted then -- workaround for outdated servers
-					MumbleSetPlayerMuted(playerId, true)
-				end
-				PrintDebugMessage("muted "..getName(playerId,true), 3)
-				for i,_ in pairs(OnlineAdmins) do 
-					TriggerLatentClientEvent("EasyAdmin:SetPlayerMuted", i, 1000, playerId, (MutedPlayers[playerId] == true or nil))
-				end
-				return true
-			elseif not toggle and MutedPlayers[playerId] then
-				MutedPlayers[playerId] = nil
-				if MumbleSetPlayerMuted then -- workaround for outdated servers
-					MumbleSetPlayerMuted(playerId, false)
-				end
-				PrintDebugMessage("unmuted "..getName(playerId,true), 3)
-				for i,_ in pairs(OnlineAdmins) do 
-					TriggerLatentClientEvent("EasyAdmin:SetPlayerMuted", i, 1000, playerId, (MutedPlayers[playerId] == true or nil))
-				end
-				return true
-			else 
-				return false
+		
+		if CachedPlayers[playerId].immune then
+			PrintDebugMessage("Attempt to mute/unmute immune player: " .. getName(playerId, true), 3)
+			return false
+		end
+	
+		if toggle and not MutedPlayers[playerId] then
+			-- Mute Player
+			MutedPlayers[playerId] = true
+			if MumbleSetPlayerMuted then 
+				MumbleSetPlayerMuted(playerId, true)
 			end
+			PrintDebugMessage("Muted " .. getName(playerId, true), 3)
+			for i, _ in pairs(OnlineAdmins) do
+				TriggerLatentClientEvent("EasyAdmin:SetPlayerMuted", i, 1000, playerId, true)
+			end
+			return true
+		elseif not toggle and MutedPlayers[playerId] then
+			-- Unmute Player
+			MutedPlayers[playerId] = nil
+			if MumbleSetPlayerMuted then 
+				MumbleSetPlayerMuted(playerId, false)
+			end
+			PrintDebugMessage("Unmuted " .. getName(playerId, true), 3)
+			for i, _ in pairs(OnlineAdmins) do
+				TriggerLatentClientEvent("EasyAdmin:SetPlayerMuted", i, 1000, playerId, false)
+			end
+			return true
 		else
 			return false
 		end
 	end
+	
 	exports('mutePlayer', mutePlayer)
+	
 	
 	RegisterServerEvent("EasyAdmin:SetAnonymous", function(playerId)
 		if DoesPlayerHavePermission(source, "anon") then
