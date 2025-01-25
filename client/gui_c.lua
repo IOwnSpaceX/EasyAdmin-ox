@@ -1983,7 +1983,12 @@ function DrawPlayerInfoLoop()
 				end
 
 				StopDrawPlayerInfo()
-				TriggerEvent("EasyAdmin:showNotification", GetLocalisedText("stoppedSpectating"))
+				TriggerEvent("ox_lib:notify", {
+					title = "Spectating Stopped",  -- You can change the title
+					description = GetLocalisedText("stoppedSpectating"),
+					type = "info"  -- Adjust the type as needed, e.g., "success", "error", "info"
+				})
+				
 				TriggerServerEvent("EasyAdmin:resetBucket", MyBucket)
 			end
 		end
