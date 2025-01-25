@@ -549,18 +549,24 @@ function GenerateMenu()
 								local AmountOfTime = input[3] or 0
 					
 								local BanLength = 0
+								local BanDurationText = ""
 					
 								if BanDuration == 'permanent' then
 									BanLength = -1
+									BanDurationText = "Permanent"
 								elseif AmountOfTime > 0 then
 									if BanDuration == 'hours' then
 										BanLength = AmountOfTime * 3600
+										BanDurationText = AmountOfTime .. " Hour(s)"
 									elseif BanDuration == 'days' then
 										BanLength = AmountOfTime * 86400
+										BanDurationText = AmountOfTime .. " Day(s)"
 									elseif BanDuration == 'weeks' then
 										BanLength = AmountOfTime * 604800
+										BanDurationText = AmountOfTime .. " Week(s)"
 									elseif BanDuration == 'months' then
 										BanLength = AmountOfTime * 2592000
+										BanDurationText = AmountOfTime .. " Month(s)"
 									end
 								end
 					
@@ -568,20 +574,20 @@ function GenerateMenu()
 									TriggerServerEvent("EasyAdmin:banPlayer", thePlayer.id, BanReason, BanLength, thePlayer.name)
 									lib.notify({
 										title = "Ban Notification",
-										description = "Player has been banned for " .. BanDuration .. " (" .. BanLength .. " seconds).",
+										description = "Player has been banned for " .. BanDurationText .. " (" .. BanLength .. " seconds).",
 										type = "success"
 									})
-								else 
+								else
 									lib.notify({
 										title = "Error",
 										description = "Invalid ban length! Please enter a valid number.",
 										type = "error"
 									})
 								end
-								
 							end
 						end
 					end
+					
 
 					if permissions["player.mute"] then
 						local thisItem = NativeUI.CreateCheckboxItem(GetLocalisedText("mute"), MutedPlayers
