@@ -134,7 +134,7 @@
     "spectatedplayer": "**%s** has Spectated **%s**",
     "teleportedtoplayer": "**%s** has Teleported to **%s**",
     "searchbans": "Search Bans",
-    "searchbansfail": "No Ban with the Search Criteria was found.",
+    "searchbansfail": "",
     "identifier": "%s Identifier",
     "warnplayer": "Warn Player",
     "warnreasonguide": "Add a reason to the Warn.",

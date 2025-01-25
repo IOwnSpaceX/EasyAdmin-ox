@@ -467,7 +467,13 @@ function GenerateMenu()
 					thisMenu:Visible(true)
 					return
 				end
-				TriggerEvent("EasyAdmin:showNotification", "~r~No results found!")
+				
+				lib.notify({
+					title = "Search Results",
+					description = "No results found!",
+					type = "error"
+				})
+				
 			end
 		end
 
@@ -559,11 +565,20 @@ function GenerateMenu()
 								end
 					
 								if BanLength > 0 or BanLength == -1 then
-									TriggerServerEvent("EasyAdmin:banPlayer", thePlayer.id, BanReason, BanLength, thePlayer.name )
-									TriggerEvent("EasyAdmin:showNotification", "Player has been banned for " .. BanDuration .. " (" .. BanLength .. " seconds).")
-								else
-									TriggerEvent("EasyAdmin:showNotification", "Invalid ban length! Please enter a valid number.")
+									TriggerServerEvent("EasyAdmin:banPlayer", thePlayer.id, BanReason, BanLength, thePlayer.name)
+									lib.notify({
+										title = "Ban Notification",
+										description = "Player has been banned for " .. BanDuration .. " (" .. BanLength .. " seconds).",
+										type = "success"
+									})
+								else 
+									lib.notify({
+										title = "Error",
+										description = "Invalid ban length! Please enter a valid number.",
+										type = "error"
+									})
 								end
+								
 							end
 						end
 					end
@@ -635,7 +650,12 @@ function GenerateMenu()
 											end
 										end
 									else
-										TriggerEvent("EasyAdmin:showNotification", "No Vehicles found nearby.")
+										lib.notify({
+											title = "EasyAdmin",
+											description = "No Vehicles found nearby.",
+											type = "error"
+										})
+
 									end
 								end
 							end
@@ -815,7 +835,11 @@ function GenerateMenu()
 					GenerateMenu()
 					Wait(100)
 					if not playerMenus[tostring(report.reporter)] then
-						TriggerEvent("EasyAdmin:showNotification", "~r~Reporting player not found.")
+						lib.notify({
+							title = "EasyAdmin",
+							description = "Reporting Player Not Found!",
+							type = "error"
+						})
 						reportViewer:Visible(true)
 					else
 						local ourMenu = playerMenus[tostring(report.reporter)].menu
@@ -835,7 +859,11 @@ function GenerateMenu()
 						GenerateMenu()
 						Wait(100)
 						if not playerMenus[tostring(report.reported)] then
-							TriggerEvent("EasyAdmin:showNotification", "~r~Reported player not found.")
+							lib.notify({
+								title = "EasyAdmin",
+								description = "Reported player not found!",
+								type = "error"
+							})
 							reportViewer:Visible(true)
 						else
 							local ourMenu = playerMenus[tostring(report.reported)].menu
@@ -1011,9 +1039,17 @@ function GenerateMenu()
 					local announcementMessage = input[1]
 					if announcementMessage and announcementMessage ~= "" then
 						TriggerServerEvent("EasyAdmin:announcement", announcementMessage)
-						TriggerEvent("EasyAdmin:showNotification", announcementMessage)
+						lib.notify({
+							title = "Announcement",
+							description = announcementMessage,
+							type = "success"
+						})
 					else
-						TriggerEvent("EasyAdmin:showNotification", GetLocalisedText("announcementfailed"))
+						lib.notify({
+							title = "EasyAdmin",
+							description = "Announcement Failed",
+							type = "error"
+						})
 					end
 				end
 			end
@@ -1303,7 +1339,13 @@ function GenerateMenu()
 			if foundBan then
 				generateBanOverview(foundBanid)
 			else
-				TriggerEvent("EasyAdmin:showNotification", GetLocalisedText("searchbansfail"))
+				lib.notify({
+					title = "Announcement",
+					description = "No Ban with the Search Criteria was found.",
+					type = "fail"
+				})
+
+				
 				GenerateMenu()
 				unbanPlayer:Visible(true)
 			end
@@ -1382,38 +1424,50 @@ function GenerateMenu()
         end
 
         if #sl > 0 and not RedM then
-            local thisItem = NativeUI.CreateItem(GetLocalisedText("cleanarea"), GetLocalisedText("cleanareaguide"))
-            servermanagement:AddItem(thisItem)
-            thisItem.Activated = function(ParentMenu, SelectedItem)
-                local input = lib.inputDialog('Clean Area', {
-                    {type = 'select', label = 'Type', options = {
-                        {value = 'cars', label = GetLocalisedText('cars')},
-                        {value = 'peds', label = GetLocalisedText('peds')},
-                        {value = 'props', label = GetLocalisedText('props')}
-                    }, default = 'cars'},
-                    {type = 'select', label = 'Radius', options = {
-                        {value = 10, label = '10'},
-                        {value = 20, label = '20'},
-                        {value = 50, label = '50'},
-                        {value = 100, label = '100'},
-                        {value = 'global', label = 'Global'}
-                    }, default = 10},
-                    {type = 'checkbox', label = 'Deep Clean', description = GetLocalisedText("deepcleanguide")}
-                })
-
-                if input then
-                    local cleanType = input[1]
-                    local cleanRadius = input[2]
-                    local deepClean = input[3]
-
-                    if cleanType and cleanRadius then
-                        TriggerServerEvent("EasyAdmin:requestCleanup", cleanType, cleanRadius, deepClean)
-                    else
-                        TriggerEvent("EasyAdmin:showNotification", GetLocalisedText("invalidcleanup"))
-                    end
-                end
-            end
-        end
+			local thisItem = NativeUI.CreateItem(GetLocalisedText("cleanarea"), GetLocalisedText("cleanareaguide"))
+			servermanagement:AddItem(thisItem)
+			thisItem.Activated = function(ParentMenu, SelectedItem)
+				local input = lib.inputDialog('Clean Area', {
+					{type = 'select', label = 'Type', options = {
+						{value = 'cars', label = GetLocalisedText('cars')},
+						{value = 'peds', label = GetLocalisedText('peds')},
+						{value = 'props', label = GetLocalisedText('props')}
+					}, default = 'cars'},
+					{type = 'select', label = 'Radius', options = {
+						{value = 10, label = '10'},
+						{value = 20, label = '20'},
+						{value = 50, label = '50'},
+						{value = 100, label = '100'},
+						{value = 'global', label = 'Global'}
+					}, default = 10},
+					{type = 'checkbox', label = 'Deep Clean', description = GetLocalisedText("deepcleanguide")}
+				})
+		
+				if input then
+					local cleanType = input[1]
+					local cleanRadius = input[2]
+					local deepClean = input[3]
+					local playerName = GetPlayerName(PlayerId())  -- Get the player's name
+		
+					if cleanType and cleanRadius then
+						TriggerServerEvent("EasyAdmin:requestCleanup", cleanType, cleanRadius, deepClean)
+		
+						-- Send a notification if it's a global cleanup
+						if cleanRadius == 'global' then
+							local message = string.format("%s has performed a global cleanup of %s.", playerName, GetLocalisedText(cleanType))
+							TriggerServerEvent("ox_lib:notifyAll", {
+								title = "Global Cleanup",
+								description = message,
+								type = "info"
+							})
+						end
+					else
+						TriggerEvent("EasyAdmin:showNotification", GetLocalisedText("invalidcleanup"))
+					end
+				end
+			end
+		end
+		
 
         if permissions["server.permissions.read"] then
             permissionEditor = _menuPool:AddSubMenu(servermanagement, GetLocalisedText("permissioneditor"),
@@ -1929,7 +1983,12 @@ function DrawPlayerInfoLoop()
 				end
 
 				StopDrawPlayerInfo()
-				TriggerEvent("EasyAdmin:showNotification", GetLocalisedText("stoppedSpectating"))
+				TriggerEvent("ox_lib:notify", {
+					title = "Spectating Stopped",  -- You can change the title
+					description = GetLocalisedText("stoppedSpectating"),
+					type = "info"  -- Adjust the type as needed, e.g., "success", "error", "info"
+				})
+				
 				TriggerServerEvent("EasyAdmin:resetBucket", MyBucket)
 			end
 		end

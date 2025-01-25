@@ -408,7 +408,12 @@ function spectatePlayer(targetPed,target,name)
 		end
 		NetworkSetInSpectatorMode(false, targetPed)
 		StopDrawPlayerInfo()
-		TriggerEvent("EasyAdmin:showNotification", GetLocalisedText("stoppedSpectating"))
+		TriggerEvent("ox_lib:notify", {
+			title = "Spectating Stopped",  -- You can change the title
+			description = GetLocalisedText("stoppedSpectating"),
+			type = "info"  -- Adjust the type as needed, e.g., "success", "error", "info"
+		})
+		
 		frozen = false
 		FreezeMyself(false)
 		Citizen.Wait(200) -- to prevent staying invisible

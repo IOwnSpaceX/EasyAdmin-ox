@@ -137,6 +137,25 @@ function checkForChangedIdentifiers(playerIds, bannedIds)
 end
 
 
+
+RegisterServerEvent('ox_lib:notifyAll')
+AddEventHandler('ox_lib:notifyAll', function(data)
+    TriggerClientEvent('ox_lib:notify', -1, data)
+end)
+
+RegisterServerEvent("EasyAdmin:announcement")
+AddEventHandler("EasyAdmin:announcement", function(message)
+    -- Broadcast the announcement to all players
+    TriggerClientEvent("ox_lib:notifyAll", -1, {
+        title = "Announcement",
+        description = message,
+        type = "info"
+    })
+end)
+
+
+
+
 AddEventHandler('playerDropped', function (reason)
 	if OnlineAdmins[source] then
 		OnlineAdmins[source] = nil
@@ -613,10 +632,18 @@ Citizen.CreateThread(function()
 
 			if muted then
 				if MutedPlayers[playerId] then
-					TriggerClientEvent("EasyAdmin:showNotification", src, getName(playerId) .. " " .. GetLocalisedText("playermuted"))
+					TriggerClientEvent("ox_lib:notify", src, {
+						title = "Player Muted", 
+						description = getName(playerId) .. " " .. GetLocalisedText("playermuted"),
+						type = "success"
+					})
 					SendWebhookMessage(moderationNotification,string.format(GetLocalisedText("adminmutedplayer"), getName(source, false, true), getName(playerId, false, true)), "mute", 16777214)
 				else
-					TriggerClientEvent("EasyAdmin:showNotification", src, getName(playerId) .. " " .. GetLocalisedText("playerunmuted"))
+					TriggerClientEvent("ox_lib:notify", src, {
+						title = "Player Unmuted", 
+						description = getName(playerId) .. " " .. GetLocalisedText("playerunmuted"),
+						type = "success"
+					})
 					SendWebhookMessage(moderationNotification,string.format(GetLocalisedText("adminunmutedplayer"), getName(source, false, false), getName(playerId, false, true)), "mute", 16777214)
 				end
 			else
