@@ -574,7 +574,7 @@ function GenerateMenu()
 									TriggerServerEvent("EasyAdmin:banPlayer", thePlayer.id, BanReason, BanLength, thePlayer.name)
 									lib.notify({
 										title = "Ban Notification",
-										description = "Player has been banned for " .. BanDurationText .. " (" .. BanLength .. " seconds).",
+										description = thePlayer.name .. " has been banned for " .. BanReason .. " for " .. BanDurationText .. ".",  -- Removed the BanLength (seconds) from the description
 										type = "success"
 									})
 								else
@@ -584,6 +584,7 @@ function GenerateMenu()
 										type = "error"
 									})
 								end
+								
 							end
 						end
 					end
