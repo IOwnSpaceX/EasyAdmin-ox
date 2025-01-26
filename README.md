@@ -5,6 +5,7 @@ I have added EasyAdmin Jail using my jail script: https://github.com/IOwnSpaceX/
 
 The ace perms to use the new jail/unjail functions are:
 `add_ace group.NAME easyadmin.player.jail allow`
+
 `add_ace group.NAME easyadmin.player.unjail allow`
 
 -------------------------------------------------------------------------------------------------------------------
