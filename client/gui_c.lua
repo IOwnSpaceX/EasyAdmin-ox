@@ -588,7 +588,64 @@ function GenerateMenu()
 							end
 						end
 					end
+
+					if permissions["player.jail"] then
+						local thisItem = NativeUI.CreateItem(GetLocalisedText("jailplayer"), "", true)
+						thisPlayer:AddItem(thisItem)
 					
+						thisItem.Activated = function(ParentMenu, SelectedItem)
+							local input = lib.inputDialog('Jail Details', {
+								{type = 'input', label = 'Reason for Jail', description = 'Provide a reason for jailing the player.', required = true, min = 3, max = 128},
+								{type = 'number', label = 'Jail Duration (seconds)', description = 'Specify the length of the jail time in seconds.', min = 1, max = 1200, default = 30, required = true}
+							})
+					
+							if input then
+								local JailReason = input[1] or "No reason provided"
+								local JailLengthSeconds = tonumber(input[2]) or 60
+					
+								if JailLengthSeconds >= 1 and JailLengthSeconds <= 1200 then
+									exports["liam-jail"]:LiamJailPlayerFromGUI(thePlayer.id, JailLengthSeconds)
+									lib.notify({
+										title = 'Player Jailed',
+										description = thePlayer.name .. ' has been jailed for ' .. JailLengthSeconds .. ' seconds.',
+										type = 'success'
+									})
+								else
+									lib.notify({
+										title = 'Invalid Jail Duration',
+										description = 'Please enter a valid number between 1 and 120000 seconds.',
+										type = 'error'
+									})
+								end
+							end
+						end
+					end
+					
+					if permissions["player.unjail"] then
+						local thisItem = NativeUI.CreateItem(GetLocalisedText("unjailplayer"), "", true)
+						thisPlayer:AddItem(thisItem)
+					
+						thisItem.Activated = function(ParentMenu, SelectedItem)
+							local input = lib.inputDialog('Confirm Unjail', {
+								{type = 'checkbox', label = 'Are you sure you want to unjail ' .. thePlayer.name .. '?', required = true}
+							})
+					
+							if input and input[1] then
+								exports["liam-jail"]:LiamUnJailPlayerFromGUI(thePlayer.id)
+								lib.notify({
+									title = 'Player Unjailed',
+									description = thePlayer.name .. ' has been released from jail.',
+									type = 'success'
+								})
+							else
+								lib.notify({
+									title = 'Unjail Cancelled',
+									description = 'The unjail action was cancelled.',
+									type = 'info'
+								})
+							end
+						end
+					end
 
 					if permissions["player.mute"] then
 						local thisItem = NativeUI.CreateCheckboxItem(GetLocalisedText("mute"), MutedPlayers
