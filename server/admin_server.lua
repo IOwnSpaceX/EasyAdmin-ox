@@ -336,7 +336,12 @@ Citizen.CreateThread(function()
 			PrintDebugMessage("Kicking Player "..getName(source, true).." for "..reason, 3)
 			DropPlayer(playerId, string.format(GetLocalisedText("kicked"), getName(source), reason) )
 		elseif CachedPlayers[playerId].immune then
-			TriggerClientEvent("EasyAdmin:showNotification", source, GetLocalisedText("adminimmune"))
+			local msg = GetLocalisedText("adminimmune")
+			TriggerClientEvent('ox_lib:notify', source, {
+				title = "Admin Action",  
+				description = msg,           
+				type = 'error'           
+			})
 		end
 	end)
 	
@@ -812,7 +817,12 @@ Citizen.CreateThread(function()
 				end
 			end
 		elseif CachedPlayers[id].immune then
-			TriggerClientEvent("EasyAdmin:showNotification", source, GetLocalisedText("adminimmune"))
+			local msg = GetLocalisedText("adminimmune")
+			TriggerClientEvent('ox_lib:notify', source, {
+				title = "Admin Action",  
+				description = msg,           
+				type = 'error'           
+			})
 		end
 	end)
 
