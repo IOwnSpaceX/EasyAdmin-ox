@@ -1,6 +1,6 @@
 # 🔨 EASYADMIN USING OX_LIB MENU 🔨
 
-# NEW UPDATE!
+# NEW UPDATE! v1.2.0
 I have added EasyAdmin Jail using my jail script: https://github.com/IOwnSpaceX/Liam-Jail and added some new notifications.
 
 The ace perms to use the new jail/unjail functions are:
