@@ -1,5 +1,14 @@
 # 🔨 EASYADMIN USING OX_LIB MENU 🔨
 
+# NEW UPDATE!
+I have added EasyAdmin Jail using my jail script: https://github.com/IOwnSpaceX/Liam-Jail and added some new notifications.
+
+The ace perms to use the new jail/unjail functions are:
+add_ace group.NAME easyadmin.player.jail allow
+add_ace group.NAME easyadmin.player.unjail allow
+
+-------------------------------------------------------------------------------------------------------------------
+
 This resource is just **__EasyAdmin__** by: https://github.com/Blumlaut **(I AM __NOT__ THE ORIGINAL CREATOR)**
 
 I created this resource to give a better UI look to EasyAdmin. Now when you use the menu the ox_lib menu will show up and you can input your options through the menu. Ox_lib by: https://github.com/overextended has helped me to improve this menu.
