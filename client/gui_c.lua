@@ -589,7 +589,6 @@ function GenerateMenu()
 						end
 					end
 
-					
 					if permissions["player.jail"] then
 						local thisItem = NativeUI.CreateItem(GetLocalisedText("jailplayer"), "", true)
 						thisPlayer:AddItem(thisItem)
@@ -647,7 +646,6 @@ function GenerateMenu()
 							end
 						end
 					end
-					
 
 					if permissions["player.mute"] then
 						local thisItem = NativeUI.CreateCheckboxItem(GetLocalisedText("mute"), MutedPlayers
@@ -1475,8 +1473,6 @@ function GenerateMenu()
 			end
 		end
 	end
-
-	
 
 
 	if DoesPlayerHavePermissionForCategory(-1, "server") then
