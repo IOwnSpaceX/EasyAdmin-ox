@@ -40,77 +40,79 @@ playlist = nil
 
 
 RegisterCommand('easyadmin', function(source, args)
-	CreateThread(function()
-		if not isAdmin == true then
-			TriggerServerEvent("EasyAdmin:amiadmin")
-			local waitTime = 0
+    CreateThread(function()
+        if not isAdmin == true then
+            TriggerServerEvent("EasyAdmin:amiadmin")
+            local waitTime = 0
 
-			repeat 
-				Wait(10)
-				waitTime=waitTime+1
-			until (isAdmin or waitTime==1000)
-			if not isAdmin then
-				return
-			end
-		end
-		
-		if not mainMenu or not mainMenu:Visible() then
-			if ((RedM and settings.infinity) or not RedM) and isAdmin then
-				playerlist = nil
-				if DoesPlayerHavePermissionForCategory(-1, "player") then
-					TriggerServerEvent("EasyAdmin:GetInfinityPlayerList")
-					repeat
-						Wait(10)
-					until playerlist
-				else
-					playerlist = {}
-				end
-			end
+            repeat 
+                Wait(10)
+                waitTime=waitTime+1
+            until (isAdmin or waitTime==1000)
+            if not isAdmin then
+                return
+            end
+        end
+        
+        if not mainMenu or not mainMenu:Visible() then
+            if ((RedM and settings.infinity) or not RedM) and isAdmin then
+                playerlist = nil
+                if DoesPlayerHavePermissionForCategory(-1, "player") then
+                    TriggerServerEvent("EasyAdmin:GetInfinityPlayerList")
+                    repeat
+                        Wait(10)
+                    until playerlist
+                else
+                    playerlist = {}
+                end
+            end
 
-			if strings and isAdmin then
-				banLength = {}
-				
-				if permissions["player.ban.permanent"] then
-					table.insert(banLength, {label = GetLocalisedText("permanent"), time = 10444633200})
-				end
+            if strings and isAdmin then
+                if LocalPlayer.state["chimerastaff:clockedIn"] == 'yes' then
+                    banLength = {}
+                    
+                    if permissions["player.ban.permanent"] then
+                        table.insert(banLength, {label = GetLocalisedText("permanent"), time = 10444633200})
+                    end
 
-				if permissions["player.ban.temporary"] then
-					table.insert(banLength, {label = "6 "..GetLocalisedText("hours"), time = 21600})
-					table.insert(banLength, {label = "12 "..GetLocalisedText("hours"), time = 43200})
-					table.insert(banLength, {label = "1 "..GetLocalisedText("day"), time = 86400})
-					table.insert(banLength, {label = "3 "..GetLocalisedText("days"), time = 259200})
-					table.insert(banLength, {label = "1 "..GetLocalisedText("week"), time = 518400})
-					table.insert(banLength, {label = "2 "..GetLocalisedText("weeks"), time = 1123200})
-					table.insert(banLength, {label = "1 "..GetLocalisedText("month"), time = 2678400})
-					table.insert(banLength, {label = "1 "..GetLocalisedText("year"), time = 31536000})
-					table.insert(banLength, {label = GetLocalisedText("customtime"), time = -1})
-				end
-				GenerateMenu()
+                    if permissions["player.ban.temporary"] then
+                        table.insert(banLength, {label = "6 "..GetLocalisedText("hours"), time = 21600})
+                        table.insert(banLength, {label = "12 "..GetLocalisedText("hours"), time = 43200})
+                        table.insert(banLength, {label = "1 "..GetLocalisedText("day"), time = 86400})
+                        table.insert(banLength, {label = "3 "..GetLocalisedText("days"), time = 259200})
+                        table.insert(banLength, {label = "1 "..GetLocalisedText("week"), time = 518400})
+                        table.insert(banLength, {label = "2 "..GetLocalisedText("weeks"), time = 1123200})
+                        table.insert(banLength, {label = "1 "..GetLocalisedText("month"), time = 2678400})
+                        table.insert(banLength, {label = "1 "..GetLocalisedText("year"), time = 31536000})
+                        table.insert(banLength, {label = GetLocalisedText("customtime"), time = -1})
+                    end
+                    GenerateMenu()
 
-				if (args[1]) then
-					local id = tonumber(args[1])
-					if (reportMenus[id]) then
-						reportMenus[id]:Visible(true)
-						return
-					elseif playerMenus[args[1]] then
-						local menu = playerMenus[args[1]]
-						menu.generate(menu.menu)
-						menu.menu:Visible(true)
-						return
-					end
-				end
-				SendNUIMessage({action= "speak", text="EasyAdmin"})
-				mainMenu:Visible(true)
-			else
-				TriggerServerEvent("EasyAdmin:amiadmin")
-			end
-		else
-			mainMenu:Visible(false)
-			_menuPool:Remove()
-			ExecutePluginsFunction("menuRemoved")
-			collectgarbage()
-		end
-	end)
+                    if (args[1]) then
+                        local id = tonumber(args[1])
+                        if (reportMenus[id]) then
+                            reportMenus[id]:Visible(true)
+                            return
+                        elseif playerMenus[args[1]] then
+                            local menu = playerMenus[args[1]]
+                            menu.generate(menu.menu)
+                            menu.menu:Visible(true)
+                            return
+                        end
+                    end
+                    SendNUIMessage({action= "speak", text="EasyAdmin"})
+                    mainMenu:Visible(true)
+                else
+                    TriggerServerEvent("EasyAdmin:amiadmin")
+                end
+            end
+        else
+            mainMenu:Visible(false)
+            _menuPool:Remove()
+            ExecutePluginsFunction("menuRemoved")
+            collectgarbage()
+        end
+    end)
 end, false)
 
 
