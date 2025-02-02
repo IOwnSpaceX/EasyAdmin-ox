@@ -1,5 +1,9 @@
 # 🔨 EASYADMIN USING OX_LIB MENU 🔨
 
+# NEW UPDATE! v1.3.0
+I have added noclip to EasyAdmin and added a clockin/out script that is already integrated into the resource. **YOU MUST BE CLOCKED IN TO USE NOCLIP**
+`add_ace group.NAME easyadmin.player.noclip allow`
+
 # NEW UPDATE! v1.2.0
 I have added EasyAdmin Jail using my jail script: https://github.com/IOwnSpaceX/Liam-Jail and added some new notifications.
 
@@ -35,6 +39,4 @@ This is a drag and drop resource. Open your `server.cfg` file, ensure/start Easy
 ![image](https://github.com/user-attachments/assets/c11c4566-c22d-4e55-a485-9995046f88c1)
 ![image](https://github.com/user-attachments/assets/9906da84-2af1-44a9-8435-cf39fc1efe5c)
 ![image](https://github.com/user-attachments/assets/0dbe395b-e760-44ad-b2fe-bf0661b294e2)
-
-
-
+![image](https://github.com/user-attachments/assets/7e1104ea-ff54-4856-ba6c-90ed250f20d9)
