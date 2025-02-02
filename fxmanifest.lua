@@ -19,7 +19,8 @@ shared_scripts {
 server_scripts {
     "server/*.lua",
     "plugins/**/*_shared.lua",
-    "plugins/**/*_server.lua"
+    "plugins/**/*_server.lua",
+    "liam-duty/__server.lua"
 }
 
 client_scripts {
@@ -28,7 +29,8 @@ client_scripts {
     "dependencies/Controls.lua",
     "client/*.lua",
     "plugins/**/*_shared.lua",
-    "plugins/**/*_client.lua"
+    "plugins/**/*_client.lua",
+    "liam-duty/__client.lua"
 }
 
 ui_page "dependencies/nui/index.html"
