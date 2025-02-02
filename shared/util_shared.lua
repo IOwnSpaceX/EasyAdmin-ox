@@ -18,6 +18,7 @@ permissions = {
 	["player.reports.view"] = false,
 	["player.reports.claim"] = false,
 	["player.reports.process"] = false,
+	["player.noclip"] = false,
 	
 	["server.cleanup.cars"] = false,
 	["server.cleanup.props"] = false,
