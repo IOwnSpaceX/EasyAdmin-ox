@@ -338,30 +338,46 @@ end)
 
 
 RegisterCommand("kick", function(source, args, rawCommand)
-	local source=source
-	local reason = ""
-	for i,theArg in pairs(args) do
-		if i ~= 1 then -- make sure we are not adding the kicked player as a reason
-			reason = reason.." "..theArg
-		end
-	end
-	if args[1] and tonumber(args[1]) then
-		TriggerServerEvent("EasyAdmin:kickPlayer", tonumber(args[1]), reason)
-	end
+    if LocalPlayer.state["chimerastaff:clockedIn"] == 'yes' then
+        local source=source
+        local reason = ""
+        for i,theArg in pairs(args) do
+            if i ~= 1 then -- make sure we are not adding the kicked player as a reason
+                reason = reason.." "..theArg
+            end
+        end
+        if args[1] and tonumber(args[1]) then
+            TriggerServerEvent("EasyAdmin:kickPlayer", tonumber(args[1]), reason)
+        end
+    else
+        TriggerEvent("ox_lib:notify", {
+            title = "Error",
+            description = "You must be clocked in to use this command.",
+            type = "error"
+        })
+    end
 end, false)
 
 RegisterCommand("ban", function(source, args, rawCommand)
-	if args[1] and tonumber(args[1]) then
-		local reason = ""
-		for i,theArg in pairs(args) do
-			if i ~= 1 then
-				reason = reason.." "..theArg
-			end
-		end
-		if args[1] and tonumber(args[1]) then
-			TriggerServerEvent("EasyAdmin:banPlayer", tonumber(args[1]), reason, false, GetPlayerName(args[1]))
-		end
-	end
+    if LocalPlayer.state["chimerastaff:clockedIn"] == 'yes' then
+        if args[1] and tonumber(args[1]) then
+            local reason = ""
+            for i,theArg in pairs(args) do
+                if i ~= 1 then
+                    reason = reason.." "..theArg
+                end
+            end
+            if args[1] and tonumber(args[1]) then
+                TriggerServerEvent("EasyAdmin:banPlayer", tonumber(args[1]), reason, false, GetPlayerName(args[1]))
+            end
+        end
+    else
+        TriggerEvent("ox_lib:notify", {
+            title = "Error",
+            description = "You must be clocked in to use this command.",
+            type = "error"
+        })
+    end
 end, false)
 
 RegisterNetEvent("EasyAdmin:FreezePlayer", function(toggle)
