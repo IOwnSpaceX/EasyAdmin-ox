@@ -7,6 +7,8 @@ I have integrated https://github.com/ItsAmmarB/DeathScript to EasyAdmin so you m
 `add_ace group.NAME easyadmin.player.adrevall`
 `add_ace group.NAME easyadmin.player.adresall`
 
+I have also integrated the jail script into EasyAdmin so no need for the jail resource from UPDATE v1.2.0 as its already integrated into the EasyAdmin file now!
+
 # NEW UPDATE! v1.3.0
 I have added noclip to EasyAdmin and added a clockin/out script that is already integrated into the resource. **YOU MUST BE CLOCKED IN TO USE NOCLIP**
 `add_ace group.NAME easyadmin.player.noclip allow`
