@@ -1,5 +1,12 @@
 # 🔨 EASYADMIN USING OX_LIB MENU 🔨
 
+# NEW UPDATE! v1.4.0
+I have integrated https://github.com/ItsAmmarB/DeathScript to EasyAdmin so you must be on duty to adrev/adres players. I will list the aces below! 💖
+`add_ace group.NAME easyadmin.player.adrev`
+`add_ace group.NAME easyadmin.player.adres`
+`add_ace group.NAME easyadmin.player.adrevall`
+`add_ace group.NAME easyadmin.player.adresall`
+
 # NEW UPDATE! v1.3.0
 I have added noclip to EasyAdmin and added a clockin/out script that is already integrated into the resource. **YOU MUST BE CLOCKED IN TO USE NOCLIP**
 `add_ace group.NAME easyadmin.player.noclip allow`
