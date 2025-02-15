@@ -2,7 +2,7 @@ fx_version "cerulean"
 
 games {"rdr3","gta5"}
 
-author 'Blumlaut <blue@furfag.de>'
+author 'Blumlaut <blue@furfag.de>, Liam (Modified)'
 description 'EasyAdmin - Admin Menu for FiveM & RedM'
 version '7.2'
 
@@ -13,14 +13,17 @@ rdr3_warning 'I acknowledge that this is a prerelease build of RedM, and I am aw
 
 shared_scripts {
     'shared/util_shared.lua',
-    '@ox_lib/init.lua'
+    '@ox_lib/init.lua',
+    'death_system/sh_config.js'
 } 
 
 server_scripts {
     "server/*.lua",
     "plugins/**/*_shared.lua",
     "plugins/**/*_server.lua",
-    "liam-duty/__server.lua"
+    "server/punishment.lua",
+    "liam-duty/__server.lua",
+    "death_system/sv_index.js"
 }
 
 client_scripts {
@@ -30,7 +33,8 @@ client_scripts {
     "client/*.lua",
     "plugins/**/*_shared.lua",
     "plugins/**/*_client.lua",
-    "liam-duty/__client.lua"
+    "liam-duty/__client.lua",
+    "death_system/cl_index.js"
 }
 
 ui_page "dependencies/nui/index.html"
