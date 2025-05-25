@@ -1,3 +1,9 @@
+# UPDATES WILL NO LONGER BE CONTINUED SO STOP DMing ME!!!
+I appreciate all the support that this resource has gotten since I published it a few months ago, but I have left my dream of coding to pursue other things in life and have left FiveM, Discord, and all that drama behind me and have moved on. With that being said the resource will stay how it is and will no longer be updated. If you would like updates you can check the forks of this resource (DO NOT TRUST EVERY FORK) as some may lead to issues and are not approved by me in any way. Thank you for choosing my resource. 🙏
+
+Thanks, Liam (IOwnSpaceX)
+-------------------------------------------------------------------------------------------------------------------
+
 # 🔨 EASYADMIN USING OX_LIB MENU 🔨
 
 # NEW UPDATE! v1.4.0
