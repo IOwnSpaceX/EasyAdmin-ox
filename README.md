@@ -1,3 +1,10 @@
+# NEW UPDATE V1.5.0
+I have integrated the liam-jail feature into the menu so you **NO** longer need the resource (https://github.com/IOwnSpaceX/liam-jail) and can remove it since it is now apart of the EasyAdmin-ox resource.
+I have now added checks to close the menu and remove the player from noclip if they use /clockout while in noclip or have the menu open it will now close. I have also added some emoji's and colors to the menu when you click on the player if you do not like this feature go into the ```en.json``` file and revert the menu back to your own personal preference. A notification now shows up when you are not clocked in and try to open the menu that tells you to clock in to use.
+
+I already have ideas for update v1.6.0 including punishment history stored into the menu via a json file. I may also add dragging toggle functionality into the misc options. Thanks for using my forked resource!
+-------------------------------------------------------------------------------------------------------------------
+
 # UPDATES WILL NO LONGER BE CONTINUED SO STOP DMing ME!!!
 I appreciate all the support that this resource has gotten since I published it a few months ago, but I have left my dream of coding to pursue other things in life and have left FiveM, Discord, and all that drama behind me and have moved on. With that being said the resource will stay how it is and will no longer be updated. If you would like updates you can check the forks of this resource (DO NOT TRUST EVERY FORK) as some may lead to issues and are not approved by me in any way. Thank you for choosing my resource. 🙏
 
