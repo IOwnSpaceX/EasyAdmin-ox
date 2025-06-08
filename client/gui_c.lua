@@ -38,6 +38,19 @@ end
 
 playlist = nil
 
+function CheckDutyStatus()
+    if _menuPool and _menuPool:IsAnyMenuOpen() then
+        if LocalPlayer.state["chimerastaff:clockedIn"] ~= 'yes' then
+            _menuPool:CloseAllMenus()
+            lib.notify({
+                title = "Menu Disabled",
+                description = "EasyAdmin has closed due to clocking out.",
+                type = "info"
+            })
+        end
+    end
+end
+
 
 RegisterCommand('easyadmin', function(source, args)
     CreateThread(function()
@@ -102,8 +115,22 @@ RegisterCommand('easyadmin', function(source, args)
                     end
                     SendNUIMessage({action= "speak", text="EasyAdmin"})
                     mainMenu:Visible(true)
+
+                CreateThread(function()
+                        while _menuPool:IsAnyMenuOpen() do -- Ignore the error this causes.
+                            CheckDutyStatus()
+                            Wait(500) -- Check every half second
+                        end
+                    end)
+
                 else
+                    lib.notify({
+                        title = "Error",
+                        description = "You are not clocked in!",
+                        type = "error"
+                    })
                     TriggerServerEvent("EasyAdmin:amiadmin")
+                    return
                 end
             end
         else
@@ -539,7 +566,7 @@ function GenerateMenu()
 										{label = 'Month(s)', value = 'months'},
 										{label = 'Permanent', value = 'permanent'}
 									}, required = true, searchable = true, clearable = true},
-								{type = 'slider', label = 'Ban Duration', description = 'Specify the length of the ban time.', min = 1, max = 300, step = 10, default = 30, required = true}
+								{type = 'number', label = 'Ban Duration', description = 'Specify the length of the ban time. If Permanent IGNORE Box Below!', min = 1, max = 300, step = 10, default = 0, required = true}
 							})
 					
 							if input then
@@ -606,7 +633,7 @@ function GenerateMenu()
 								local JailLengthSeconds = tonumber(input[2]) or 60
 					
 								if JailLengthSeconds >= 1 and JailLengthSeconds <= 1200 then
-									exports["liam-jail"]:LiamJailPlayerFromGUI(thePlayer.id, JailLengthSeconds)
+									exports["EasyAdmin"]:LiamJailPlayerFromGUI(thePlayer.id, JailLengthSeconds)
 									lib.notify({
 										title = 'Player Jailed',
 										description = thePlayer.name .. ' has been jailed for ' .. JailLengthSeconds .. ' seconds.',
@@ -633,7 +660,7 @@ function GenerateMenu()
 							})
 					
 							if input and input[1] then
-								exports["liam-jail"]:LiamUnJailPlayerFromGUI(thePlayer.id)
+								exports["EasyAdmin"]:LiamUnJailPlayerFromGUI(thePlayer.id)
 								lib.notify({
 									title = 'Player Unjailed',
 									description = thePlayer.name .. ' has been released from jail.',
@@ -1504,8 +1531,7 @@ function GenerateMenu()
 						{value = 20, label = '20'},
 						{value = 50, label = '50'},
 						{value = 100, label = '100'},
-						{value = 'global', label = 'Global'}
-					}, default = 10},
+						{value = 'global', label = 'Global'} }, default = 10},
 					{type = 'checkbox', label = 'Deep Clean', description = GetLocalisedText("deepcleanguide")}
 				})
 		
