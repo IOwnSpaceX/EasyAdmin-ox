@@ -1,6 +1,8 @@
 # NEW UPDATE V1.5.0
 I have integrated the liam-jail feature into the menu so you **NO** longer need the resource (https://github.com/IOwnSpaceX/liam-jail) and can remove it since it is now apart of the EasyAdmin-ox resource.
-I have now added checks to close the menu and remove the player from noclip if they use /clockout while in noclip or have the menu open it will now close. I have also added some emoji's and colors to the menu when you click on the player if you do not like this feature go into the ```en.json``` file and revert the menu back to your own personal preference. A notification now shows up when you are not clocked in and try to open the menu that tells you to clock in to use.
+I have now added checks to close the menu and remove the player from noclip if they use /clockout while in noclip or have the menu open it will now close. I have also added some emoji's and colors to the menu when you click on the player if you do not like this feature go into the ```en.json``` file and revert the menu back to your own personal preference. A notification now shows up when you are not clocked in and try to open the menu that tells you to clock in to use. I have removed the slider on the ox_lib input box for the banning function because people were having difficulties with the slider so it is now a number box.
+
+I have also removed the package file that causes issues with the menu and your server will install it automatically when you start it. It is recommended to restart server on a fresh install of EasyAdmin.
 
 I already have ideas for update v1.6.0 including punishment history stored into the menu via a json file. I may also add dragging toggle functionality into the misc options. Thanks for using my forked resource!
 -------------------------------------------------------------------------------------------------------------------
