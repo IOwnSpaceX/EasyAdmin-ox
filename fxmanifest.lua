@@ -21,9 +21,9 @@ server_scripts {
     "server/*.lua",
     "plugins/**/*_shared.lua",
     "plugins/**/*_server.lua",
-    "server/punishment.lua",
     "liam-duty/__server.lua",
-    "death_system/sv_index.js"
+    "death_system/sv_index.js",
+    "liam-jail/server.lua"
 }
 
 client_scripts {
@@ -34,7 +34,8 @@ client_scripts {
     "plugins/**/*_shared.lua",
     "plugins/**/*_client.lua",
     "liam-duty/__client.lua",
-    "death_system/cl_index.js"
+    "death_system/cl_index.js",
+    "liam-jail/client.lua"
 }
 
 ui_page "dependencies/nui/index.html"
