@@ -520,99 +520,118 @@ config = {
 noclipActive = false
 index = 1
 
+local function IsPlayerOnDuty()
+    return LocalPlayer.state["chimerastaff:clockedIn"] == 'yes'
+end
+
 Citizen.CreateThread(function()
-	buttons = setupScaleform("instructional_buttons")
+    buttons = setupScaleform("instructional_buttons")
 
-	currentSpeed = config.speeds[index].speed
-	while true do
-		Citizen.Wait(1)
-		if permissions["player.noclip"] then
-			if IsControlJustPressed(1, config.controls.openKey) then
-				if LocalPlayer.state["chimerastaff:clockedIn"] == 'yes' then
-					noclipActive = not noclipActive
+    currentSpeed = config.speeds[index].speed
+    while true do
+        Citizen.Wait(1)
+        if permissions["player.noclip"] then
+            if IsControlJustPressed(1, config.controls.openKey) then
+                if IsPlayerOnDuty() then
+                    noclipActive = not noclipActive
 
-					if IsPedInAnyVehicle(PlayerPedId(), false) then
-						noclipEntity = GetVehiclePedIsIn(PlayerPedId(), false)
-					else
-						noclipEntity = PlayerPedId()
-					end
+                    if IsPedInAnyVehicle(PlayerPedId(), false) then
+                        noclipEntity = GetVehiclePedIsIn(PlayerPedId(), false)
+                    else
+                        noclipEntity = PlayerPedId()
+                    end
 
-					SetEntityCollision(noclipEntity, not noclipActive, not noclipActive)
-					FreezeEntityPosition(noclipEntity, noclipActive)
-					SetEntityInvincible(noclipEntity, noclipActive)
-					SetVehicleRadioEnabled(noclipEntity, not noclipActive)
-				else
-					lib.notify({
-						title = 'Error',
-						description = 'You are not clocked in!',
-						type = 'error',
-					})
-				end
-			end
+                    SetEntityCollision(noclipEntity, not noclipActive, not noclipActive)
+                    FreezeEntityPosition(noclipEntity, noclipActive)
+                    SetEntityInvincible(noclipEntity, noclipActive)
+                    SetVehicleRadioEnabled(noclipEntity, not noclipActive)
+                else
+                    lib.notify({
+                        title = 'Error',
+                        description = 'You are not clocked in!',
+                        type = 'error',
+                    })
+                end
+            end
 
-			if noclipActive then
-				DrawScaleformMovieFullscreen(buttons)
+            if noclipActive then
+                if not IsPlayerOnDuty() then -- Checks to see if player clocks out in noclip state. If yes then the player will be removed from noclip state.
+                    noclipActive = false
+                    SetEntityCollision(noclipEntity, true, true)
+                    FreezeEntityPosition(noclipEntity, false)
+                    SetEntityInvincible(noclipEntity, false)
+                    SetVehicleRadioEnabled(noclipEntity, true)
+                    SetEntityAlpha(noclipEntity, 255, false)
+                    SetEntityVisible(noclipEntity, true)
+                    lib.notify({
+                        title = 'Noclip Disabled',
+                        description = 'You have been removed from noclip as you are no longer on duty.',
+                        type = 'info',
+                    })
+                else
+                    DrawScaleformMovieFullscreen(buttons)
 
-				local xoff = 0.0
-				local yoff = 0.0
-				local zoff = 0.0
+                    local xoff = 0.0
+                    local yoff = 0.0
+                    local zoff = 0.0
 
-				if IsControlJustPressed(1, config.controls.changeSpeed) then
-					if index ~= 8 then
-						index = index + 1
-						currentSpeed = config.speeds[index].speed
-					else
-						currentSpeed = config.speeds[1].speed
-						index = 1
-					end
-				end
-				setupScaleform("instructional_buttons")
+                    if IsControlJustPressed(1, config.controls.changeSpeed) then
+                        if index ~= 8 then
+                            index = index + 1
+                            currentSpeed = config.speeds[index].speed
+                        else
+                            currentSpeed = config.speeds[1].speed
+                            index = 1
+                        end
+                    end
+                    setupScaleform("instructional_buttons")
 
-				DisableControls()
+                    DisableControls()
 
-				if IsDisabledControlPressed(0, config.controls.goForward) then
-					yoff = config.offsets.y
-				end
+                    if IsDisabledControlPressed(0, config.controls.goForward) then
+                        yoff = config.offsets.y
+                    end
 
-				if IsDisabledControlPressed(0, config.controls.goBackward) then
-					yoff = -config.offsets.y
-				end
+                    if IsDisabledControlPressed(0, config.controls.goBackward) then
+                        yoff = -config.offsets.y
+                    end
 
-				if IsDisabledControlPressed(0, config.controls.turnLeft) then
-					xoff = -config.offsets.y
-				end
+                    if IsDisabledControlPressed(0, config.controls.turnLeft) then
+                        xoff = -config.offsets.y
+                    end
 
-				if IsDisabledControlPressed(0, config.controls.turnRight) then
-					xoff = config.offsets.y
-				end
+                    if IsDisabledControlPressed(0, config.controls.turnRight) then
+                        xoff = config.offsets.y
+                    end
 
-				if IsDisabledControlPressed(0, config.controls.goUp) then
-					zoff = config.offsets.z
-				end
+                    if IsDisabledControlPressed(0, config.controls.goUp) then
+                        zoff = config.offsets.z
+                    end
 
-				if IsDisabledControlPressed(0, config.controls.goDown) then
-					zoff = -config.offsets.z
-				end
+                    if IsDisabledControlPressed(0, config.controls.goDown) then
+                        zoff = -config.offsets.z
+                    end
 
-				local newPos = GetOffsetFromEntityInWorldCoords(noclipEntity, xoff * (currentSpeed + 0.3),
-					yoff * (currentSpeed + 0.3), zoff * (currentSpeed + 0.3))
-				local camRot = GetGameplayCamRot(2)
-				local heading = camRot.z
-				SetEntityVelocity(noclipEntity, 0.0, 0.0, 0.0)
-				SetEntityRotation(noclipEntity, 0.0, 0.0, 0.0, 0, false)
-				SetEntityHeading(noclipEntity, heading)
-				SetEntityCoordsNoOffset(noclipEntity, newPos.x, newPos.y, newPos.z, noclipActive, noclipActive,
-					noclipActive)
+                    local newPos = GetOffsetFromEntityInWorldCoords(noclipEntity, xoff * (currentSpeed + 0.3),
+                        yoff * (currentSpeed + 0.3), zoff * (currentSpeed + 0.3))
+                    local camRot = GetGameplayCamRot(2)
+                    local heading = camRot.z
+                    SetEntityVelocity(noclipEntity, 0.0, 0.0, 0.0)
+                    SetEntityRotation(noclipEntity, 0.0, 0.0, 0.0, 0, false)
+                    SetEntityHeading(noclipEntity, heading)
+                    SetEntityCoordsNoOffset(noclipEntity, newPos.x, newPos.y, newPos.z, noclipActive, noclipActive,
+                        noclipActive)
 
-				SetEntityAlpha(noclipEntity, 52, false)
-				SetEntityVisible(noclipEntity, not noclipActive)
-				SetEntityLocallyVisible(noclipEntity)
-			else
-				SetEntityAlpha(noclipEntity, 255, false)
-				SetEntityVisible(noclipEntity, not noclipActive)
-			end
-		end
-	end
+                    SetEntityAlpha(noclipEntity, 52, false)
+                    SetEntityVisible(noclipEntity, not noclipActive)
+                    SetEntityLocallyVisible(noclipEntity)
+                end
+            else
+                SetEntityAlpha(noclipEntity, 255, false)
+                SetEntityVisible(noclipEntity, true)
+            end
+        end
+    end
 end)
 
 function ButtonMessage(text)
