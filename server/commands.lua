@@ -92,7 +92,7 @@ end, false)
 
 RegisterCommand("adres", function(source, args, rawCommand)
     if DoesPlayerHavePermission(source, "player.adres") then
-        if Player(source).state['chimerastaff:clockedIn'] == "yes" then
+        if Player(source).state['atlasstaff:clockedIn'] == "yes" then
             local target = args[1] or source
             if target then
                 if GetPlayerName(target) ~= nil then
@@ -122,7 +122,7 @@ end, false)
 
 RegisterCommand("adrev", function(source, args, rawCommand)
     if DoesPlayerHavePermission(source, "player.adrev") then
-        if Player(source).state['chimerastaff:clockedIn'] == "yes" then
+        if Player(source).state['atlasstaff:clockedIn'] == "yes" then
             local target = args[1] or source
             if target then
                 if GetPlayerName(target) ~= nil then
@@ -152,7 +152,7 @@ end, false)
 
 RegisterCommand("adrevall", function(source, args, rawCommand)
     if DoesPlayerHavePermission(source, "player.adrevall") then
-        if Player(source).state['chimerastaff:clockedIn'] == "yes" then
+        if Player(source).state['atlasstaff:clockedIn'] == "yes" then
             TriggerClientEvent('DeathScript:Admin:Revive', -1, source, true)
             TriggerClientEvent('ox_lib:notify', source, {
                 title = 'Success',
@@ -177,7 +177,7 @@ end, false)
 
 RegisterCommand("adresall", function(source, args, rawCommand)
     if DoesPlayerHavePermission(source, "player.adresall") then
-        if Player(source).state['chimerastaff:clockedIn'] == "yes" then
+        if Player(source).state['atlasstaff:clockedIn'] == "yes" then
             TriggerClientEvent('DeathScript:Admin:Respawn', -1, source, true)
             TriggerClientEvent('ox_lib:notify', source, {
                 title = 'Success',
