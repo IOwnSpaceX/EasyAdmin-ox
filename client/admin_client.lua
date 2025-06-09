@@ -338,7 +338,7 @@ end)
 
 
 RegisterCommand("kick", function(source, args, rawCommand)
-    if LocalPlayer.state["chimerastaff:clockedIn"] == 'yes' then
+    if LocalPlayer.state["atlasstaff:clockedIn"] == 'yes' then
         local source=source
         local reason = ""
         for i,theArg in pairs(args) do
@@ -359,7 +359,7 @@ RegisterCommand("kick", function(source, args, rawCommand)
 end, false)
 
 RegisterCommand("ban", function(source, args, rawCommand)
-    if LocalPlayer.state["chimerastaff:clockedIn"] == 'yes' then
+    if LocalPlayer.state["atlasstaff:clockedIn"] == 'yes' then
         if args[1] and tonumber(args[1]) then
             local reason = ""
             for i,theArg in pairs(args) do
@@ -521,7 +521,7 @@ noclipActive = false
 index = 1
 
 local function IsPlayerOnDuty()
-    return LocalPlayer.state["chimerastaff:clockedIn"] == 'yes'
+    return LocalPlayer.state["atlasstaff:clockedIn"] == 'yes'
 end
 
 Citizen.CreateThread(function()

@@ -40,7 +40,7 @@ playlist = nil
 
 function CheckDutyStatus()
     if _menuPool and _menuPool:IsAnyMenuOpen() then
-        if LocalPlayer.state["chimerastaff:clockedIn"] ~= 'yes' then
+        if LocalPlayer.state["atlasstaff:clockedIn"] ~= 'yes' then
             _menuPool:CloseAllMenus()
             lib.notify({
                 title = "Menu Disabled",
@@ -81,7 +81,7 @@ RegisterCommand('easyadmin', function(source, args)
             end
 
             if strings and isAdmin then
-                if LocalPlayer.state["chimerastaff:clockedIn"] == 'yes' then
+                if LocalPlayer.state["atlasstaff:clockedIn"] == 'yes' then
                     banLength = {}
                     
                     if permissions["player.ban.permanent"] then
