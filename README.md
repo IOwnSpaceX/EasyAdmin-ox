@@ -1,4 +1,14 @@
-# NEW UPDATE V1.5.0
+# NEW UPDATE v1.6.0
+I have added a cooldown of 5 minutes after you clock out unless you have the bypass ace ```add_ace group.NAME chimeraduty.bypass``` and the cooldown is waived. Punishment History is finally here thanks to https://github.com/DukeOfCheese and his storage script. You can use the aces listed in order to view punishment history:
+`add_ace group.NAME player.actionhistory.view`
+`add_ace group.NAME player.actionhistory.add`
+`add_ace group.NAME player.actionhistory.delete`
+
+![image](https://github.com/user-attachments/assets/1926aa63-e096-4c09-bc23-3a3600dbb681)
+
+-------------------------------------------------------------------------------------------------------------------
+
+# NEW UPDATE v1.5.0
 I have integrated the liam-jail feature into the menu so you **NO** longer need the resource (https://github.com/IOwnSpaceX/liam-jail) and can remove it since it is now apart of the EasyAdmin-ox resource.
 I have now added checks to close the menu and remove the player from noclip if they use /clockout while in noclip or have the menu open it will now close. I have also added some emoji's and colors to the menu when you click on the player if you do not like this feature go into the ```en.json``` file and revert the menu back to your own personal preference. A notification now shows up when you are not clocked in and try to open the menu that tells you to clock in to use. I have removed the slider on the ox_lib input box for the banning function because people were having difficulties with the slider so it is now a number box.
 
