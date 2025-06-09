@@ -7,6 +7,25 @@ local Config = {
         avatarUrl = "https://imgur.com/xxxxxx" -- replace with an avatar url
     }
 }
+Config.BypassSystem = {
+    enabled = true,
+    bypassPermission = "chimeraduty.bypass"  -- ACE permission for duty bypass
+}
+Config.Cooldown = {
+    enabled = true,
+    duration = 300 -- 5 minutes in seconds
+}
+----------------------------------------------------------------------------------------------------
+local playerCooldowns = {}
+
+local function HasDutyBypass(source)
+    if not Config.BypassSystem.enabled then return false end
+    local hasBypass = IsPlayerAceAllowed(source, Config.BypassSystem.bypassPermission)
+    if hasBypass then
+        Player(source).state['chimerastaff:clockedIn'] = 'yes'
+    end
+    return hasBypass
+end
 
 local function SendWebhook(player, action, clockInTime)
     if not Config.Webhook.enabled then return end
@@ -48,30 +67,64 @@ local function SendWebhook(player, action, clockInTime)
     }), { ['Content-Type'] = 'application/json' })
 end
 
+local function CheckCooldown(source)
+    if not Config.Cooldown.enabled or HasDutyBypass(source) then return true end
+    
+    local currentTime = os.time()
+    if playerCooldowns[source] and currentTime - playerCooldowns[source] < Config.Cooldown.duration then
+        local remainingTime = math.ceil(Config.Cooldown.duration - (currentTime - playerCooldowns[source]))
+        TriggerClientEvent('ox_lib:notify', source, {
+            title = 'Cooldown Active',
+            description = string.format('You must wait %d seconds before clocking in again.', remainingTime),
+            type = 'error'
+        })
+        return false
+    end
+    return true
+end
+
 RegisterCommand("clockin", function(source, args, rawCommand)
     if exports['EasyAdmin']:IsPlayerAdmin(source) then
-        if Player(source).state['chimerastaff:clockedIn'] == 'no' or Player(source).state['chimerastaff:clockedIn'] == nil then
-            Player(source).state['chimerastaff:clockedIn'] = 'yes'
+        if HasDutyBypass(source) then
             TriggerClientEvent('ox_lib:notify', source, {
                 title = 'Staff Clock In',
                 description = 'You have clocked on as staff!',
                 type = 'success'
             })
-            SendWebhook(source, "Clock In")
-        else
-            TriggerClientEvent('ox_lib:notify', source, {
-                title = 'Staff Clock In',
-                description = 'You are already clocked on as staff!',
-                type = 'error'
-            })
+            return
+        elseif CheckCooldown(source) then
+            if Player(source).state['chimerastaff:clockedIn'] == 'no' or Player(source).state['chimerastaff:clockedIn'] == nil then
+                Player(source).state['chimerastaff:clockedIn'] = 'yes'
+                TriggerClientEvent('ox_lib:notify', source, {
+                    title = 'Staff Clock In',
+                    description = 'You have clocked on as staff!',
+                    type = 'success'
+                })
+                SendWebhook(source, "Clock In")
+            else
+                TriggerClientEvent('ox_lib:notify', source, {
+                    title = 'Staff Clock In',
+                    description = 'You are already clocked in!',
+                    type = 'error'
+                })
+            end
         end
     end
 end, false)
 
 RegisterCommand("clockout", function(source, args, rawCommand)
     if exports['EasyAdmin']:IsPlayerAdmin(source) then
-        if Player(source).state['chimerastaff:clockedIn'] == 'yes' then
+        if HasDutyBypass(source) then
             Player(source).state['chimerastaff:clockedIn'] = 'no'
+            TriggerClientEvent('ox_lib:notify', source, {
+                title = 'Staff Clock Out',
+                description = 'You may clockin freely due to bypass.',
+                type = 'success'
+            })
+            SendWebhook(source, "Clock Out (Bypass)")
+        elseif Player(source).state['chimerastaff:clockedIn'] == 'yes' then
+            Player(source).state['chimerastaff:clockedIn'] = 'no'
+            playerCooldowns[source] = os.time()
             TriggerClientEvent('ox_lib:notify', source, {
                 title = 'Staff Clock Out',
                 description = 'You have clocked out as staff!',
@@ -87,3 +140,7 @@ RegisterCommand("clockout", function(source, args, rawCommand)
         end
     end
 end, false)
+
+AddEventHandler('playerDropped', function(reason)
+    playerCooldowns[source] = nil
+end)
