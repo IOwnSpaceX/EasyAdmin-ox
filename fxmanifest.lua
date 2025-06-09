@@ -21,7 +21,7 @@ server_scripts {
     "server/*.lua",
     "plugins/**/*_shared.lua",
     "plugins/**/*_server.lua",
-    "liam-duty/__server.lua",
+    "atlas-duty/__server.lua",
     "death_system/sv_index.js",
     "liam-jail/server.lua"
 }
@@ -33,7 +33,7 @@ client_scripts {
     "client/*.lua",
     "plugins/**/*_shared.lua",
     "plugins/**/*_client.lua",
-    "liam-duty/__client.lua",
+    "atlas-duty/__client.lua",
     "death_system/cl_index.js",
     "liam-jail/client.lua"
 }
