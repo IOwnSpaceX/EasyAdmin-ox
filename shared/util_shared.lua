@@ -19,6 +19,9 @@ permissions = {
 	["player.reports.claim"] = false,
 	["player.reports.process"] = false,
 	["player.noclip"] = false,
+	["player.actionhistory.view"] = false,
+	["player.actionhistory.add"] = false,
+	["player.actionhistory.delete"] = false,
 	
 	["server.cleanup.cars"] = false,
 	["server.cleanup.props"] = false,
