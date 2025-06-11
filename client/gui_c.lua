@@ -116,8 +116,12 @@ RegisterCommand('easyadmin', function(source, args)
                     SendNUIMessage({action= "speak", text="EasyAdmin"})
                     mainMenu:Visible(true)
 
+		if not _menuPool then
+                    _menuPool = NativeUI.CreatePool()
+                end
+
                 CreateThread(function()
-                        while _menuPool:IsAnyMenuOpen() do -- Ignore the error this causes.
+                        while _menuPool:IsAnyMenuOpen() do
                             CheckDutyStatus()
                             Wait(500) -- Check every half second
                         end
