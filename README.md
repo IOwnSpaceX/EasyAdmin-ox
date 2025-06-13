@@ -1,3 +1,9 @@
+# SMALL UPDATE
+I have added a refresh action history button.
+![image](https://github.com/user-attachments/assets/20eba58a-579e-4cf8-a03a-838f2e029a07)
+
+-------------------------------------------------------------------------------------------------------------------
+
 # NEW UPDATE v1.6.0
 I have added a cooldown of 5 minutes after you clock out unless you have the bypass ace ```add_ace group.NAME chimeraduty.bypass``` and the cooldown is waived. Punishment History is finally here thanks to https://github.com/DukeOfCheese and his storage script. You can use the aces listed in order to view punishment history:
 `add_ace group.NAME easyadmin.player.actionhistory.view`
