@@ -1,9 +1,3 @@
-# SMALL UPDATE
-I have added a refresh action history button. I have also updated the jail UI so it now displays time 24/7 and shows the reason for why you might have been jailed.
-![image](https://github.com/user-attachments/assets/20eba58a-579e-4cf8-a03a-838f2e029a07)
-![image](https://github.com/user-attachments/assets/a113532c-fa31-4c1b-8c76-3312495c32bb)
-
-
 -------------------------------------------------------------------------------------------------------------------
 
 # NEW UPDATE v1.6.0
