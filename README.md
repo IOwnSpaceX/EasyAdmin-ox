@@ -7,7 +7,7 @@ I have added a refresh action history button. I have also updated the jail UI so
 -------------------------------------------------------------------------------------------------------------------
 
 # NEW UPDATE v1.6.0
-I have added a cooldown of 5 minutes after you clock out unless you have the bypass ace ```add_ace group.NAME chimeraduty.bypass``` and the cooldown is waived. Punishment History is finally here thanks to https://github.com/DukeOfCheese and his storage script. You can use the aces listed in order to view punishment history:
+I have added a cooldown of 5 minutes after you clock out unless you have the bypass ace ```add_ace group.NAME atlasduty.bypass``` and the cooldown is waived. Punishment History is finally here thanks to https://github.com/DukeOfCheese and his storage script. You can use the aces listed in order to view punishment history:
 `add_ace group.NAME easyadmin.player.actionhistory.view`
 `add_ace group.NAME easyadmin.player.actionhistory.add`
 `add_ace group.NAME easyadmin.player.actionhistory.delete`
