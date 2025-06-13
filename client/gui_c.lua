@@ -664,7 +664,7 @@ function GenerateMenu()
 							})
 					
 							if input and input[1] then
-								exports["EasyAdmin"]:LiamUnJailPlayerFromGUI(thePlayer.id)
+								TriggerServerEvent("Liam:UnjailPlayerServer", thePlayer.id)
 								lib.notify({
 									title = 'Player Unjailed',
 									description = thePlayer.name .. ' has been released from jail.',
