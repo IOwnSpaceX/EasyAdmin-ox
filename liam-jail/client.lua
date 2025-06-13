@@ -3,9 +3,10 @@ local EarlyRelease = false
 local JailCoords = vector3(1677.233, 2658.618, 45.216)
 local MaxDistance = 50.0 -- Maximum distance the player can wander from the jail center
 local TimeAddedForEscape = 60 -- Seconds added for escape attempts
+local JailReason = "No reason provided"
 
 RegisterNetEvent("Liam:JailPlayer")
-AddEventHandler("Liam:JailPlayer", function(jailtime)
+AddEventHandler("Liam:JailPlayer", function(jailtime, reason)
     if IsJailed then return end
     
     local playerPed = PlayerPedId()
@@ -14,6 +15,7 @@ AddEventHandler("Liam:JailPlayer", function(jailtime)
             SetEntityCoords(playerPed, JailCoords)
             IsJailed = true
             EarlyRelease = false
+            JailReason = reason or "No reason provided"
             
             while jailtime > 0 and not EarlyRelease do
                 playerPed = PlayerPedId()
@@ -23,14 +25,16 @@ AddEventHandler("Liam:JailPlayer", function(jailtime)
                 if IsPedInAnyVehicle(playerPed, false) then
                     ClearPedTasksImmediately(playerPed)
                 end
-                
-                if jailtime % 30 == 0 then
-                    lib.notify({
-                        title = 'Jail Time Remaining',
-                        description = math.floor(jailtime) .. " seconds left until release.",
-                        type = 'inform'
-                    })
-                end
+
+                lib.showTextUI(string.format("You have %s seconds remaining in jail for: %s", math.floor(jailtime), JailReason), {
+                    position = "bottom-center",
+                    icon = 'clock',
+                    style = {
+                        borderRadius = 8,
+                        backgroundColor = '#ba1420',
+                        color = 'white'
+                    }
+                })
                 
                 Citizen.Wait(500)
                 local playerLoc = GetEntityCoords(playerPed, true)
@@ -52,7 +56,7 @@ AddEventHandler("Liam:JailPlayer", function(jailtime)
                 jailtime = jailtime - 0.5
             end
             
-            -- Release the player
+            lib.hideTextUI()
             SetEntityCoords(playerPed, 1849.0, 2585.0, 45.0)
             SetEntityHeading(playerPed, 265.0)
             IsJailed = false
@@ -74,20 +78,10 @@ AddEventHandler("Liam:UnjailPlayer", function()
     SetEntityHeading(playerPed, 265.0)
     IsJailed = false
     SetEntityInvincible(playerPed, false)
+    lib.hideTextUI()
     lib.notify({
         title = 'Early Release',
         description = "You have been released from jail early.",
         type = 'success'
     })
 end)
-
-function LiamJailPlayerFromGUI(targetId, jailtime)
-    TriggerServerEvent("Liam:JailPlayerServer", targetId, jailtime)
-end
-
-function LiamUnJailPlayerFromGUI(targetId)
-    TriggerServerEvent("Liam:UnjailPlayerServer", targetId)
-end
-
-exports("LiamJailPlayerFromGUI", LiamJailPlayerFromGUI)
-exports("LiamUnJailPlayerFromGUI", LiamUnJailPlayerFromGUI)
