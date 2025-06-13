@@ -828,7 +828,17 @@ function GenerateMenu()
 
 					if GetConvar("ea_enableActionHistory", "true") == "true" and permissions["player.actionhistory.view"] then
 						local actionHistoryMenu = _menuPool:AddSubMenu(thisPlayer, GetLocalisedText("actionhistory"), GetLocalisedText("actionhistoryguide"), true)
-						actionHistoryMenu:SetMenuWidthOffset(menuWidth)
+    					actionHistoryMenu:SetMenuWidthOffset(menuWidth)
+
+						local refreshItem = NativeUI.CreateItem(GetLocalisedText("refreshactionhistory"), GetLocalisedText("refreshactionhistoryguide"))
+    					actionHistoryMenu:AddItem(refreshItem)
+    					refreshItem.Activated = function(ParentMenu, SelectedItem)
+        					actionHistoryMenu:Clear()
+        					local loadingItem = NativeUI.CreateItem(GetLocalisedText("actionsloading"), GetLocalisedText("actionsloadingguide"))
+        					actionHistoryMenu:AddItem(loadingItem)
+        					TriggerServerEvent("EasyAdmin:GetActionHistory", thePlayer.discord)
+    					end
+
 						local loadingItem = NativeUI.CreateItem(GetLocalisedText("actionsloading"), GetLocalisedText("actionsloadingguide"))
 						actionHistoryMenu:AddItem(loadingItem)
 						TriggerServerEvent("EasyAdmin:GetActionHistory", thePlayer.discord)
@@ -836,6 +846,7 @@ function GenerateMenu()
 						RegisterNetEvent("EasyAdmin:ReceiveActionHistory")
 						AddEventHandler("EasyAdmin:ReceiveActionHistory", function(actionHistory)
 							actionHistoryMenu:Clear()
+							actionHistoryMenu:AddItem(refreshItem)
 							if #actionHistory == 0 then
 								local noActionsItem = NativeUI.CreateItem(GetLocalisedText("noactions"), GetLocalisedText("noactionsguide"))
 								actionHistoryMenu:AddItem(noActionsItem)
@@ -889,6 +900,7 @@ function GenerateMenu()
 								actionSubmenu:AddItem(moderatorDiscord)
 								actionSubmenu:RefreshIndex()
 							end
+							actionHistoryMenu:RefreshIndex()
 						end)
 					end
 
