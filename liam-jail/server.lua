@@ -29,7 +29,7 @@ AddEventHandler("Liam:JailPlayerServer", function(targetId, jailtime, jailReason
             
             Storage.addAction("~y~JAILED~w~~s~", discordId, reason, moderatorName, moderatorDiscordId)
         end
-        TriggerClientEvent("Liam:JailPlayer", targetPlayer, jailtime)
+        TriggerClientEvent("Liam:JailPlayer", targetPlayer, jailtime, jailReason)
     end
 end)
 
