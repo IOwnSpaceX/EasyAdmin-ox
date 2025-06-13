@@ -54,6 +54,8 @@
     "deleteaction": "Delete Action",
     "deleteactionguide": "Delete this action from the history.",
     "actiondeleted": "Action deleted.",
+    "refreshactionhistory": "Refresh Action History",
+    "refreshactionhistoryguide": "Refreshes Action History.",
     "getplayerdiscord": "Copy Discord of Player",
     "getplayerdiscordguide": "Copy the Discord ID of the Player.",
     "getmoderatordiscord": "Copy Discord of Moderator",
