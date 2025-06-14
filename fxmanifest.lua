@@ -11,6 +11,11 @@ lua54 'yes'
 
 rdr3_warning 'I acknowledge that this is a prerelease build of RedM, and I am aware my resources *will* become incompatible once RedM ships.'
 
+dependencies {
+    'ox_lib',
+    'yarn'
+}
+
 shared_scripts {
     'shared/util_shared.lua',
     '@ox_lib/init.lua',
@@ -42,10 +47,6 @@ ui_page "dependencies/nui/index.html"
 files {
     "dependencies/images/*.png",
     "dependencies/nui/**/*"
-}
-
-dependencies {
-    'yarn'
 }
 
 provide 'EasyAdmin'
