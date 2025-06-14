@@ -42,18 +42,20 @@ AddEventHandler("Liam:JailPlayer", function(jailtime, reason)
                 
                 if distance > MaxDistance then
                     SetEntityCoords(playerPed, JailCoords)
-                    jailtime = jailtime + TimeAddedForEscape
-                    if jailtime > 1500 then
-                        jailtime = 1500
-                    end
+                    -- jailtime = jailtime + TimeAddedForEscape
+                    -- if jailtime > 1500 then
+                    --     jailtime = 1500
+                    -- end
                     lib.notify({
                         title = 'Escape Attempt',
-                        description = "Your jail time was extended by " .. TimeAddedForEscape .. " seconds because you tried to escape.",
+                        -- description = "Your jail time was extended by " .. TimeAddedForEscape .. " seconds because you tried to escape.",
+                        description = "Your escape attempt failed miserably.",
                         type = 'error'
                     })
                 end
-                
-                jailtime = jailtime - 0.5
+                  jailtime = jailtime - 0.5
+                -- Update server with remaining time
+                TriggerServerEvent("Liam:UpdateJailTime", jailtime)
             end
             
             lib.hideTextUI()

@@ -84,7 +84,7 @@ local function CheckCooldown(source)
 end
 
 RegisterCommand("clockin", function(source, args, rawCommand)
-    if exports['EasyAdmin']:IsPlayerAdmin(source) then
+    if exports['EasyAdmin-ox']:IsPlayerAdmin(source) then
         if HasDutyBypass(source) then
             TriggerClientEvent('ox_lib:notify', source, {
                 title = 'Staff Clock In',
@@ -113,7 +113,7 @@ RegisterCommand("clockin", function(source, args, rawCommand)
 end, false)
 
 RegisterCommand("clockout", function(source, args, rawCommand)
-    if exports['EasyAdmin']:IsPlayerAdmin(source) then
+    if exports['EasyAdmin-ox']:IsPlayerAdmin(source) then
         if HasDutyBypass(source) then
             Player(source).state['atlasstaff:clockedIn'] = 'no'
             TriggerClientEvent('ox_lib:notify', source, {
