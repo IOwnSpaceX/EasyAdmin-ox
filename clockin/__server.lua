@@ -3,26 +3,45 @@ local Config = {
     Webhook = {
         enabled = true, -- do you want the bots to send logs?
         url = "https://discord.com/api/webhooks/xxxxxxx", -- webhook url
-        botName = "Atlas Duty Bot", -- webhook name
+        botName = "Easyadmin-ox Duty Bot", -- webhook name
         avatarUrl = "https://imgur.com/xxxxxx" -- replace with an avatar url
     }
 }
 Config.BypassSystem = {
     enabled = true,
-    bypassPermission = "atlasduty.bypass"  -- ACE permission for duty bypass
+    bypassPermission = "clockin.bypass"  -- ACE permission for duty bypass
 }
 Config.Cooldown = {
     enabled = true,
     duration = 300 -- 5 minutes in seconds
 }
 ----------------------------------------------------------------------------------------------------
+
+
+
+-- Function to check if duty system is enabled via convar
+local function IsDutySystemEnabled()
+    local dutyEnabled = GetConvar("ea_DutySystemEnabled", "false")
+    return dutyEnabled == "true"
+end
+
+-- Function to check if player is on duty
+local function IsPlayerOnDuty(source)
+    -- If duty system is disabled via convar, always return true (considered on duty)
+    if not IsDutySystemEnabled() then
+        return true
+    end
+    -- Otherwise, check the player state
+    return Player(source).state['easyadmin-ox:clockedIn'] == 'yes'
+end
+
 local playerCooldowns = {}
 
 local function HasDutyBypass(source)
     if not Config.BypassSystem.enabled then return false end
     local hasBypass = IsPlayerAceAllowed(source, Config.BypassSystem.bypassPermission)
-    if hasBypass then
-        Player(source).state['atlasstaff:clockedIn'] = 'yes'
+    if hasBypass and IsDutySystemEnabled() then
+        Player(source).state['easyadmin-ox:clockedIn'] = 'yes'
     end
     return hasBypass
 end
@@ -53,7 +72,7 @@ local function SendWebhook(player, action, clockInTime)
             ["title"] = "Staff " .. action,
             ["description"] = description,
             ["footer"] = {
-                ["text"] = "Atlas Duty System 🤖"
+                ["text"] = "Easyadmin-ox Duty System 🤖"
             },
             ["timestamp"] = os.date("!%Y-%m-%dT%H:%M:%SZ")
         }
@@ -85,6 +104,15 @@ end
 
 RegisterCommand("clockin", function(source, args, rawCommand)
     if exports['EasyAdmin-ox']:IsPlayerAdmin(source) then
+        if not IsDutySystemEnabled() then
+            TriggerClientEvent('ox_lib:notify', source, {
+                title = 'Staff Clock In',
+                description = 'Duty system is disabled via convar!',
+                type = 'info'
+            })
+            return
+        end
+    
         if HasDutyBypass(source) then
             TriggerClientEvent('ox_lib:notify', source, {
                 title = 'Staff Clock In',
@@ -93,8 +121,8 @@ RegisterCommand("clockin", function(source, args, rawCommand)
             })
             return
         elseif CheckCooldown(source) then
-            if Player(source).state['atlasstaff:clockedIn'] == 'no' or Player(source).state['atlasstaff:clockedIn'] == nil then
-                Player(source).state['atlasstaff:clockedIn'] = 'yes'
+            if Player(source).state['easyadmin-ox:clockedIn'] == 'no' or Player(source).state['easyadmin-ox:clockedIn'] == nil then
+                Player(source).state['easyadmin-ox:clockedIn'] = 'yes'
                 TriggerClientEvent('ox_lib:notify', source, {
                     title = 'Staff Clock In',
                     description = 'You have clocked on as staff!',
@@ -114,16 +142,25 @@ end, false)
 
 RegisterCommand("clockout", function(source, args, rawCommand)
     if exports['EasyAdmin-ox']:IsPlayerAdmin(source) then
+        if not IsDutySystemEnabled() then
+            TriggerClientEvent('ox_lib:notify', source, {
+                title = 'Staff Clock Out',
+                description = 'Duty system is disabled via convar!',
+                type = 'info'
+            })
+            return
+        end
+    
         if HasDutyBypass(source) then
-            Player(source).state['atlasstaff:clockedIn'] = 'no'
+            Player(source).state['easyadmin-ox:clockedIn'] = 'no'
             TriggerClientEvent('ox_lib:notify', source, {
                 title = 'Staff Clock Out',
                 description = 'You may clockin freely due to bypass.',
                 type = 'success'
             })
             SendWebhook(source, "Clock Out (Bypass)")
-        elseif Player(source).state['atlasstaff:clockedIn'] == 'yes' then
-            Player(source).state['atlasstaff:clockedIn'] = 'no'
+        elseif Player(source).state['easyadmin-ox:clockedIn'] == 'yes' then
+            Player(source).state['easyadmin-ox:clockedIn'] = 'no'
             playerCooldowns[source] = os.time()
             TriggerClientEvent('ox_lib:notify', source, {
                 title = 'Staff Clock Out',
@@ -144,3 +181,6 @@ end, false)
 AddEventHandler('playerDropped', function(reason)
     playerCooldowns[source] = nil
 end)
+
+-- Export the duty check function
+exports('IsPlayerOnDuty', IsPlayerOnDuty)

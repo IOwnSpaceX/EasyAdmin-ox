@@ -337,8 +337,22 @@ RegisterNetEvent("EasyAdmin:SlapPlayer", function(slapAmount)
 end)
 
 
+-- Function to check if player is on duty
+local function IsPlayerOnDuty()
+    -- Check if duty system is enabled via convar
+    local isDutySystemEnabled = GetConvar('ea_DutySystemEnabled', 'false') == 'true'
+    
+    -- If duty system is disabled, always return true
+    if not isDutySystemEnabled then
+        return true
+    end
+    
+    -- Otherwise check player state
+    return LocalPlayer.state["easyadmin-ox:clockedIn"] == 'yes'
+end
+
 RegisterCommand("kick", function(source, args, rawCommand)
-    if LocalPlayer.state["atlasstaff:clockedIn"] == 'yes' then
+    if IsPlayerOnDuty() then
         local source=source
         local reason = ""
         for i,theArg in pairs(args) do
@@ -359,7 +373,7 @@ RegisterCommand("kick", function(source, args, rawCommand)
 end, false)
 
 RegisterCommand("ban", function(source, args, rawCommand)
-    if LocalPlayer.state["atlasstaff:clockedIn"] == 'yes' then
+    if IsPlayerOnDuty() then
         if args[1] and tonumber(args[1]) then
             local reason = ""
             for i,theArg in pairs(args) do
@@ -519,10 +533,6 @@ config = {
 
 noclipActive = false
 index = 1
-
-local function IsPlayerOnDuty()
-    return LocalPlayer.state["atlasstaff:clockedIn"] == 'yes'
-end
 
 Citizen.CreateThread(function()
     buttons = setupScaleform("instructional_buttons")

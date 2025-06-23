@@ -90,9 +90,8 @@ RegisterCommand("slap", function(source, args, rawCommand)
     end
 end, false)	
 
-RegisterCommand("adres", function(source, args, rawCommand)
-    if DoesPlayerHavePermission(source, "player.adres") then
-        if Player(source).state['atlasstaff:clockedIn'] == "yes" then
+RegisterCommand("adres", function(source, args, rawCommand)    if DoesPlayerHavePermission(source, "player.adres") then
+        if IsPlayerOnDuty(source) then
             local target = args[1] or source
             if target then
                 if GetPlayerName(target) ~= nil then
@@ -120,9 +119,8 @@ RegisterCommand("adres", function(source, args, rawCommand)
     end
 end, false)
 
-RegisterCommand("adrev", function(source, args, rawCommand)
-    if DoesPlayerHavePermission(source, "player.adrev") then
-        if Player(source).state['atlasstaff:clockedIn'] == "yes" then
+RegisterCommand("adrev", function(source, args, rawCommand)    if DoesPlayerHavePermission(source, "player.adrev") then
+        if IsPlayerOnDuty(source) then
             local target = args[1] or source
             if target then
                 if GetPlayerName(target) ~= nil then
@@ -150,9 +148,8 @@ RegisterCommand("adrev", function(source, args, rawCommand)
     end
 end, false)
 
-RegisterCommand("adrevall", function(source, args, rawCommand)
-    if DoesPlayerHavePermission(source, "player.adrevall") then
-        if Player(source).state['atlasstaff:clockedIn'] == "yes" then
+RegisterCommand("adrevall", function(source, args, rawCommand)    if DoesPlayerHavePermission(source, "player.adrevall") then
+        if IsPlayerOnDuty(source) then
             TriggerClientEvent('DeathScript:Admin:Revive', -1, source, true)
             TriggerClientEvent('ox_lib:notify', source, {
                 title = 'Success',
@@ -175,9 +172,8 @@ RegisterCommand("adrevall", function(source, args, rawCommand)
     end
 end, false)
 
-RegisterCommand("adresall", function(source, args, rawCommand)
-    if DoesPlayerHavePermission(source, "player.adresall") then
-        if Player(source).state['atlasstaff:clockedIn'] == "yes" then
+RegisterCommand("adresall", function(source, args, rawCommand)    if DoesPlayerHavePermission(source, "player.adresall") then
+        if IsPlayerOnDuty(source) then
             TriggerClientEvent('DeathScript:Admin:Respawn', -1, source, true)
             TriggerClientEvent('ox_lib:notify', source, {
                 title = 'Success',
@@ -199,3 +195,17 @@ RegisterCommand("adresall", function(source, args, rawCommand)
         })
     end
 end, false)
+
+-- Function to check if player is on duty
+local function IsPlayerOnDuty(source)
+    -- Check if duty system is enabled via convar
+    local isDutySystemEnabled = GetConvar('ea_DutySystemEnabled', 'false') == 'true'
+    
+    -- If duty system is disabled, always return true (considered on duty)
+    if not isDutySystemEnabled then
+        return true
+    end
+    
+    -- Otherwise check the player state
+    return Player(source).state['easyadmin-ox:clockedIn'] == "yes"
+end

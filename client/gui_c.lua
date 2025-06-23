@@ -39,8 +39,12 @@ end
 playlist = nil
 
 function CheckDutyStatus()
+    -- First check if duty system is enabled via convar
+    local isDutySystemEnabled = GetConvar('ea_DutySystemEnabled', 'false') == 'true'
+    
     if _menuPool and _menuPool:IsAnyMenuOpen() then
-        if LocalPlayer.state["atlasstaff:clockedIn"] ~= 'yes' then
+        -- Only check duty status if the duty system is enabled
+        if isDutySystemEnabled and LocalPlayer.state["easyadmin-ox:clockedIn"] ~= 'yes' then
             _menuPool:CloseAllMenus()
             lib.notify({
                 title = "Menu Disabled",
@@ -78,10 +82,12 @@ RegisterCommand('easyadmin', function(source, args)
                 else
                     playerlist = {}
                 end
-            end
-
-            if strings and isAdmin then
-                if LocalPlayer.state["atlasstaff:clockedIn"] == 'yes' then
+            end            if strings and isAdmin then
+                -- Check if duty system is enabled via convar
+                local isDutySystemEnabled = GetConvar('ea_DutySystemEnabled', 'false') == 'true'
+                
+                -- Only verify clock-in status if duty system is enabled
+                if not isDutySystemEnabled or LocalPlayer.state["easyadmin-ox:clockedIn"] == 'yes' then
                     banLength = {}
                     
                     if permissions["player.ban.permanent"] then
@@ -125,12 +131,10 @@ RegisterCommand('easyadmin', function(source, args)
                             CheckDutyStatus()
                             Wait(500) -- Check every half second
                         end
-                    end)
-
-                else
+                    end)                else
                     lib.notify({
                         title = "Error",
-                        description = "You are not clocked in!",
+                        description = "You are not clocked in! Please use /clockin first.",
                         type = "error"
                     })
                     TriggerServerEvent("EasyAdmin:amiadmin")
