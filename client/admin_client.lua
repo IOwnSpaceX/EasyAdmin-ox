@@ -10,6 +10,36 @@
 ------------------------------------
 ------------------------------------
 
+-- CONVAR SYNC SYSTEM
+-- Global variable to store the duty system state received from server
+DutySystemEnabled = false
+
+-- Event handler for receiving the duty system state from server
+RegisterNetEvent("EasyAdmin:SetDutySystemState")
+AddEventHandler("EasyAdmin:SetDutySystemState", function(isDutySystemEnabled)
+    DutySystemEnabled = isDutySystemEnabled
+    -- Print for debugging
+    print("EasyAdmin: Received duty system state from server: " .. tostring(isDutySystemEnabled))
+end)
+
+-- Helper function to check if the duty system is enabled
+function IsDutySystemEnabled()
+    return DutySystemEnabled
+end
+
+-- Request convar state from server on client start
+CreateThread(function()
+    Wait(1000) -- Give server a moment to initialize
+    print("EasyAdmin: Requesting duty system state from server...")
+    TriggerServerEvent("EasyAdmin:RequestConvarState")
+    
+    -- Add a fallback in case the server doesn't respond
+    Wait(5000)
+    if DutySystemEnabled == false then
+        print("EasyAdmin: WARNING - Did not receive duty system state from server, using default (false).")
+    end
+end)
+
 players = {}
 banlist = {}
 cachedplayers = {}
@@ -337,8 +367,22 @@ RegisterNetEvent("EasyAdmin:SlapPlayer", function(slapAmount)
 end)
 
 
+-- Function to check if player is on duty
+local function IsPlayerOnDuty()
+    -- Use the global IsDutySystemEnabled function for consistency
+    local isDutySystemEnabled = IsDutySystemEnabled()
+    
+    -- If duty system is disabled, always return true
+    if not isDutySystemEnabled then
+        return true
+    end
+    
+    -- Otherwise check player state
+    return LocalPlayer.state["easyadmin-ox:clockedIn"] == 'yes'
+end
+
 RegisterCommand("kick", function(source, args, rawCommand)
-    if LocalPlayer.state["atlasstaff:clockedIn"] == 'yes' then
+    if IsPlayerOnDuty() then
         local source=source
         local reason = ""
         for i,theArg in pairs(args) do
@@ -359,7 +403,7 @@ RegisterCommand("kick", function(source, args, rawCommand)
 end, false)
 
 RegisterCommand("ban", function(source, args, rawCommand)
-    if LocalPlayer.state["atlasstaff:clockedIn"] == 'yes' then
+    if IsPlayerOnDuty() then
         if args[1] and tonumber(args[1]) then
             local reason = ""
             for i,theArg in pairs(args) do
@@ -520,10 +564,6 @@ config = {
 noclipActive = false
 index = 1
 
-local function IsPlayerOnDuty()
-    return LocalPlayer.state["atlasstaff:clockedIn"] == 'yes'
-end
-
 Citizen.CreateThread(function()
     buttons = setupScaleform("instructional_buttons")
 
@@ -532,6 +572,7 @@ Citizen.CreateThread(function()
         Citizen.Wait(1)
         if permissions["player.noclip"] then
             if IsControlJustPressed(1, config.controls.openKey) then
+				print("pressed")
                 if IsPlayerOnDuty() then
                     noclipActive = not noclipActive
 
@@ -555,7 +596,8 @@ Citizen.CreateThread(function()
             end
 
             if noclipActive then
-                if not IsPlayerOnDuty() then -- Checks to see if player clocks out in noclip state. If yes then the player will be removed from noclip state.
+				print(IsPlayerOnDuty())
+                if not IsPlayerOnDuty() then
                     noclipActive = false
                     SetEntityCollision(noclipEntity, true, true)
                     FreezeEntityPosition(noclipEntity, false)

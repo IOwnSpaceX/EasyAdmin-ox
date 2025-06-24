@@ -26,7 +26,7 @@ server_scripts {
     "server/*.lua",
     "plugins/**/*_shared.lua",
     "plugins/**/*_server.lua",
-    "atlas-duty/__server.lua",
+    "clockin/__server.lua",
     "death_system/sv_index.js",
     "liam-jail/server.lua"
 }
