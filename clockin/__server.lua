@@ -25,16 +25,6 @@ local function IsDutySystemEnabled()
     return dutyEnabled == "true"
 end
 
--- Function to check if player is on duty
-local function IsPlayerOnDuty(source)
-    -- If duty system is disabled via convar, always return true (considered on duty)
-    if not IsDutySystemEnabled() then
-        return true
-    end
-    -- Otherwise, check the player state
-    return Player(source).state['easyadmin-ox:clockedIn'] == 'yes'
-end
-
 local playerCooldowns = {}
 
 local function HasDutyBypass(source)
@@ -181,6 +171,3 @@ end, false)
 AddEventHandler('playerDropped', function(reason)
     playerCooldowns[source] = nil
 end)
-
--- Export the duty check function
-exports('IsPlayerOnDuty', IsPlayerOnDuty)

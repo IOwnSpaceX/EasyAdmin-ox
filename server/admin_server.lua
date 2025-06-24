@@ -680,7 +680,7 @@ Citizen.CreateThread(function()
 			TriggerClientEvent("ox_lib:notify", src, {
 				title = "Admin Action",
 				description = getName(playerId) .. " is immune and cannot be muted.",
-				type = "error"
+			 type = "error"
 			})
 		end
 	end)
@@ -1153,14 +1153,6 @@ end)
 
 ---------------------------------- END USEFUL
 
-if GetConvar("ea_enableSplash", "true") == "true" then
-	local version,master = GetVersion()
-	if master then version = version.." (UNSTABLE PRE-RELEASE!)" end
-	print("\n _______ _______ _______ __   __ _______ ______  _______ _____ __   _\n |______ |_____| |______   \\_/   |_____| |     \\ |  |  |   |   | \\  |\n |______ |     | ______|    |    |     | |_____/ |  |  | __|__ |  \\_|\n                           Version ^3"..version.."^7")
-	PrintDebugMessage("Initialised.", 4)
-end
-
-
 -- DO NOT TOUCH THESE
 -- DO NOT TOUCH THESE
 -- DO NOT TOUCH THESE
@@ -1176,3 +1168,43 @@ FrozenPlayers = {} -- DO NOT TOUCH THIS
 -- DO NOT TOUCH THESE
 -- DO NOT TOUCH THESE
 -- DO NOT TOUCH THESE
+
+-- CONVAR SYNC SYSTEM
+-- Variable to keep track of the last known value of the duty system convar
+local lastDutySystemState = GetConvar("ea_DutySystemEnabled", "false") == "true"
+
+-- Function to broadcast the convar state to all clients
+local function BroadcastConvarState()
+    local isDutySystemEnabled = GetConvar("ea_DutySystemEnabled", "false") == "true"
+    TriggerClientEvent("EasyAdmin:SetDutySystemState", -1, isDutySystemEnabled)
+    lastDutySystemState = isDutySystemEnabled
+    PrintDebugMessage("Broadcasting duty system state: " .. tostring(isDutySystemEnabled), 4)
+end
+
+-- Broadcast the convar state when the resource starts
+AddEventHandler("onResourceStart", function(resourceName)
+    if resourceName == GetCurrentResourceName() then
+        BroadcastConvarState()
+        PrintDebugMessage("Resource started, broadcasting duty system state", 4)
+    end
+end)
+
+-- Send the convar state when a client requests it
+RegisterNetEvent("EasyAdmin:RequestConvarState")
+AddEventHandler("EasyAdmin:RequestConvarState", function()
+    local isDutySystemEnabled = GetConvar("ea_DutySystemEnabled", "false") == "true"
+    TriggerClientEvent("EasyAdmin:SetDutySystemState", source, isDutySystemEnabled)
+    PrintDebugMessage("Sending duty system state to client: " .. tostring(source), 4)
+end)
+
+-- Check for convar changes every few seconds
+CreateThread(function()
+    while true do
+        Wait(5000) -- Check every 5 seconds
+        local currentState = GetConvar("ea_DutySystemEnabled", "false") == "true"
+        if currentState ~= lastDutySystemState then
+            PrintDebugMessage("Duty system state changed to: " .. tostring(currentState), 3)
+            BroadcastConvarState()
+        end
+    end
+end)
