@@ -2187,11 +2187,11 @@ function DrawPlayerInfoLoop()
 				end
 			end
 
-			if (not RedM and IsControlJustPressed(0, 103) or (RedM and IsControlJustReleased(0, Controls["Enter"]))) then
+			if (not RedM and IsControlJustPressed(0,103) or (RedM and IsControlJustReleased(0, Controls["Enter"]))) then
 				local targetPed = PlayerPedId()
 				local targetPlayer = -1
-				local targetx, targety, targetz = table.unpack(GetEntityCoords(targetPed, false))
-				spectatePlayer(targetPed, targetPlayer, GetPlayerName(targetPlayer))
+				local targetx,targety,targetz = table.unpack(GetEntityCoords(targetPed, false))
+				spectatePlayer(targetPed,targetPlayer,GetPlayerName(targetPlayer))
 				TriggerEvent('EasyAdmin:FreezePlayer', false)
 				--SetEntityCoords(PlayerPedId(), oldCoords.x, oldCoords.y, oldCoords.z, 0, 0, 0, false)
 				if not RedM then
