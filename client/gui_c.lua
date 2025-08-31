@@ -541,6 +541,94 @@ function GenerateMenu()
 			playerMenus[tostring(thePlayer.id)].generate = function(menu)
 				thisPlayer = menu
 
+				if GetConvar("ea_enableActionHistory", "true") == "true" and permissions["player.actionhistory.view"] then
+						local actionHistoryMenu = _menuPool:AddSubMenu(thisPlayer, GetLocalisedText("actionhistory"),
+							GetLocalisedText("actionhistoryguide"), true)
+						actionHistoryMenu:SetMenuWidthOffset(menuWidth)
+
+						local refreshItem = NativeUI.CreateItem(GetLocalisedText("refreshactionhistory"),
+							GetLocalisedText("refreshactionhistoryguide"))
+						actionHistoryMenu:AddItem(refreshItem)
+						refreshItem.Activated = function(ParentMenu, SelectedItem)
+							actionHistoryMenu:Clear()
+							local loadingItem = NativeUI.CreateItem(GetLocalisedText("actionsloading"),
+								GetLocalisedText("actionsloadingguide"))
+							actionHistoryMenu:AddItem(loadingItem)
+							TriggerServerEvent("EasyAdmin:GetActionHistory", thePlayer.discord)
+						end
+
+						local loadingItem = NativeUI.CreateItem(GetLocalisedText("actionsloading"),
+							GetLocalisedText("actionsloadingguide"))
+						actionHistoryMenu:AddItem(loadingItem)
+						TriggerServerEvent("EasyAdmin:GetActionHistory", thePlayer.discord)
+
+						RegisterNetEvent("EasyAdmin:ReceiveActionHistory")
+						AddEventHandler("EasyAdmin:ReceiveActionHistory", function(actionHistory)
+							actionHistoryMenu:Clear()
+							actionHistoryMenu:AddItem(refreshItem)
+							if #actionHistory == 0 then
+								local noActionsItem = NativeUI.CreateItem(GetLocalisedText("noactions"),
+									GetLocalisedText("noactionsguide"))
+								actionHistoryMenu:AddItem(noActionsItem)
+							end
+							for i, action in ipairs(actionHistory) do
+								local actionSubmenu = _menuPool:AddSubMenu(actionHistoryMenu,
+									"[#" .. action.id .. "] " .. action.action .. " by " .. action.moderator,
+									GetLocalisedText("reason") .. ": " .. action.reason or "", true)
+								actionSubmenu:SetMenuWidthOffset(menuWidth)
+								if action.action == "BAN" and permissions["player.ban.remove"] then
+									local actionUnban = NativeUI.CreateItem(GetLocalisedText("unbanplayer"),
+										GetLocalisedText("unbanplayerguide"))
+									actionUnban.Activated = function(ParentMenu, SelectedItem)
+										TriggerServerEvent("EasyAdmin:UnbanPlayer", action.id)
+										TriggerEvent("EasyAdmin:showNotification", GetLocalisedText("unbanplayer"))
+										TriggerServerEvent("EasyAdmin:GetActionHistory", thePlayer.discord)
+										ParentMenu:Visible(false)
+										ParentMenu.ParentMenu:Visible(true)
+									end
+									actionSubmenu:AddItem(actionUnban)
+								end
+								if permissions["player.actionhistory.delete"] then
+									local actionDelete = NativeUI.CreateItem(GetLocalisedText("deleteaction"),
+										GetLocalisedText("deleteactionguide"))
+									actionDelete.Activated = function(ParentMenu, SelectedItem)
+										TriggerServerEvent("EasyAdmin:DeleteAction", action.id)
+										lib.notify({
+											title = "EasyAdmin",
+											description = GetLocalisedText("actiondeleted"),
+											type = "success"
+										})
+										TriggerServerEvent("EasyAdmin:GetActionHistory", thePlayer.discord)
+										ParentMenu:Visible(false)
+										ParentMenu.ParentMenu:Visible(true)
+									end
+									actionSubmenu:AddItem(actionDelete)
+								end
+								local punishedDiscord = NativeUI.CreateItem(GetLocalisedText("getplayerdiscord"),
+									GetLocalisedText("getplayerdiscordguide"))
+								punishedDiscord.Activated = function(ParentMenu, SelectedItem)
+									if action.discord then
+										copyToClipboard(action.discord)
+									else
+										TriggerEvent("EasyAdmin:showNotification", GetLocalisedText("nodiscordpresent"))
+									end
+								end
+								actionSubmenu:AddItem(punishedDiscord)
+								local moderatorDiscord = NativeUI.CreateItem(GetLocalisedText("getmoderatordiscord"),
+									GetLocalisedText("getmoderatordiscordguide"))
+								moderatorDiscord.Activated = function(ParentMenu, SelectedItem)
+									if action.moderatorId then
+										copyToClipboard(action.moderatorId)
+									else
+										TriggerEvent("EasyAdmin:showNotification", GetLocalisedText("nodiscordpresent"))
+									end
+								end
+								actionSubmenu:AddItem(moderatorDiscord)
+								actionSubmenu:RefreshIndex()
+							end
+							actionHistoryMenu:RefreshIndex()
+						end)
+					end
 
 				if not playerMenus[tostring(thePlayer.id)].generated then
 					if permissions["player.kick"] then
@@ -698,6 +786,26 @@ function GenerateMenu()
 						end
 					end
 
+					if permissions["player.warn"] then
+						local thisItem = NativeUI.CreateItem(GetLocalisedText("warnplayer"),
+							GetLocalisedText("warnreasonguide"))
+						thisPlayer:AddItem(thisItem)
+						thisItem.Activated = function(ParentMenu, SelectedItem)
+							local input = lib.inputDialog('Warn Player', {
+								{ type = 'input', label = 'Reason for Warning', description = 'Provide a reason for warning the player.', required = true, min = 3, max = 128 }
+							})
+
+							if input then
+								local WarnReason = input[1] or GetLocalisedText("noreason")
+								TriggerServerEvent("EasyAdmin:warnPlayer", thePlayer.id, WarnReason)
+								_menuPool:CloseAllMenus()
+								Citizen.Wait(800)
+								GenerateMenu()
+								playermanagement:Visible(true)
+							end
+						end
+					end
+
 					if permissions["player.mute"] then
 						local thisItem = NativeUI.CreateCheckboxItem(GetLocalisedText("mute"), MutedPlayers
 							[thePlayer.id], GetLocalisedText("muteguide"))
@@ -803,26 +911,6 @@ function GenerateMenu()
 						end
 					end
 
-					if permissions["player.warn"] then
-						local thisItem = NativeUI.CreateItem(GetLocalisedText("warnplayer"),
-							GetLocalisedText("warnreasonguide"))
-						thisPlayer:AddItem(thisItem)
-						thisItem.Activated = function(ParentMenu, SelectedItem)
-							local input = lib.inputDialog('Warn Player', {
-								{ type = 'input', label = 'Reason for Warning', description = 'Provide a reason for warning the player.', required = true, min = 3, max = 128 }
-							})
-
-							if input then
-								local WarnReason = input[1] or GetLocalisedText("noreason")
-								TriggerServerEvent("EasyAdmin:warnPlayer", thePlayer.id, WarnReason)
-								_menuPool:CloseAllMenus()
-								Citizen.Wait(800)
-								GenerateMenu()
-								playermanagement:Visible(true)
-							end
-						end
-					end
-
 					local items = {
 						"Copy Discord ID",
 						"Toggle Cuff",
@@ -842,95 +930,6 @@ function GenerateMenu()
 								TriggerEvent('SEM_InteractionMenu:Cuff', thePlayer.id) -- Your cuffing event should go here (Default: Sem Interaction Menu)
 							end
 						end
-					end
-
-					if GetConvar("ea_enableActionHistory", "true") == "true" and permissions["player.actionhistory.view"] then
-						local actionHistoryMenu = _menuPool:AddSubMenu(thisPlayer, GetLocalisedText("actionhistory"),
-							GetLocalisedText("actionhistoryguide"), true)
-						actionHistoryMenu:SetMenuWidthOffset(menuWidth)
-
-						local refreshItem = NativeUI.CreateItem(GetLocalisedText("refreshactionhistory"),
-							GetLocalisedText("refreshactionhistoryguide"))
-						actionHistoryMenu:AddItem(refreshItem)
-						refreshItem.Activated = function(ParentMenu, SelectedItem)
-							actionHistoryMenu:Clear()
-							local loadingItem = NativeUI.CreateItem(GetLocalisedText("actionsloading"),
-								GetLocalisedText("actionsloadingguide"))
-							actionHistoryMenu:AddItem(loadingItem)
-							TriggerServerEvent("EasyAdmin:GetActionHistory", thePlayer.discord)
-						end
-
-						local loadingItem = NativeUI.CreateItem(GetLocalisedText("actionsloading"),
-							GetLocalisedText("actionsloadingguide"))
-						actionHistoryMenu:AddItem(loadingItem)
-						TriggerServerEvent("EasyAdmin:GetActionHistory", thePlayer.discord)
-
-						RegisterNetEvent("EasyAdmin:ReceiveActionHistory")
-						AddEventHandler("EasyAdmin:ReceiveActionHistory", function(actionHistory)
-							actionHistoryMenu:Clear()
-							actionHistoryMenu:AddItem(refreshItem)
-							if #actionHistory == 0 then
-								local noActionsItem = NativeUI.CreateItem(GetLocalisedText("noactions"),
-									GetLocalisedText("noactionsguide"))
-								actionHistoryMenu:AddItem(noActionsItem)
-							end
-							for i, action in ipairs(actionHistory) do
-								local actionSubmenu = _menuPool:AddSubMenu(actionHistoryMenu,
-									"[#" .. action.id .. "] " .. action.action .. " by " .. action.moderator,
-									GetLocalisedText("reason") .. ": " .. action.reason or "", true)
-								actionSubmenu:SetMenuWidthOffset(menuWidth)
-								if action.action == "BAN" and permissions["player.ban.remove"] then
-									local actionUnban = NativeUI.CreateItem(GetLocalisedText("unbanplayer"),
-										GetLocalisedText("unbanplayerguide"))
-									actionUnban.Activated = function(ParentMenu, SelectedItem)
-										TriggerServerEvent("EasyAdmin:UnbanPlayer", action.id)
-										TriggerEvent("EasyAdmin:showNotification", GetLocalisedText("unbanplayer"))
-										TriggerServerEvent("EasyAdmin:GetActionHistory", thePlayer.discord)
-										ParentMenu:Visible(false)
-										ParentMenu.ParentMenu:Visible(true)
-									end
-									actionSubmenu:AddItem(actionUnban)
-								end
-								if permissions["player.actionhistory.delete"] then
-									local actionDelete = NativeUI.CreateItem(GetLocalisedText("deleteaction"),
-										GetLocalisedText("deleteactionguide"))
-									actionDelete.Activated = function(ParentMenu, SelectedItem)
-										TriggerServerEvent("EasyAdmin:DeleteAction", action.id)
-										lib.notify({
-											title = "EasyAdmin",
-											description = GetLocalisedText("actiondeleted"),
-											type = "success"
-										})
-										TriggerServerEvent("EasyAdmin:GetActionHistory", thePlayer.discord)
-										ParentMenu:Visible(false)
-										ParentMenu.ParentMenu:Visible(true)
-									end
-									actionSubmenu:AddItem(actionDelete)
-								end
-								local punishedDiscord = NativeUI.CreateItem(GetLocalisedText("getplayerdiscord"),
-									GetLocalisedText("getplayerdiscordguide"))
-								punishedDiscord.Activated = function(ParentMenu, SelectedItem)
-									if action.discord then
-										copyToClipboard(action.discord)
-									else
-										TriggerEvent("EasyAdmin:showNotification", GetLocalisedText("nodiscordpresent"))
-									end
-								end
-								actionSubmenu:AddItem(punishedDiscord)
-								local moderatorDiscord = NativeUI.CreateItem(GetLocalisedText("getmoderatordiscord"),
-									GetLocalisedText("getmoderatordiscordguide"))
-								moderatorDiscord.Activated = function(ParentMenu, SelectedItem)
-									if action.moderatorId then
-										copyToClipboard(action.moderatorId)
-									else
-										TriggerEvent("EasyAdmin:showNotification", GetLocalisedText("nodiscordpresent"))
-									end
-								end
-								actionSubmenu:AddItem(moderatorDiscord)
-								actionSubmenu:RefreshIndex()
-							end
-							actionHistoryMenu:RefreshIndex()
-						end)
 					end
 
 					TriggerEvent("EasyAdmin:BuildPlayerOptions", thePlayer.id)
