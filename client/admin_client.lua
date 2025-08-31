@@ -159,35 +159,41 @@ RegisterNetEvent('EasyAdmin:SetPlayerMuted', function(player,state)
 	end
 end)
 
-function FreezeMyself(state)
+RegisterNetEvent("EasyAdmin:FreezePlayer", function(toggle)
+    local playerPed = PlayerPedId()
+    frozen = toggle
 
-	if state then
-		if frozen then return end -- prevents double threads
-		CreateThread(function()
-	
-			while frozen do 
-	
-				FreezeEntityPosition(cachedInfo.ped, frozen)
-				if cachedInfo.veh ~= 0 then
-					FreezeEntityPosition(cachedInfo.veh, frozen)
-				end
-				DisablePlayerFiring(cachedInfo.player, true)
-	
-				Wait(0)
-	
-			end
-	
-		end)
-	else
-		-- unfreeze
-		local localPlayerPedId = PlayerPedId()
-		FreezeEntityPosition(localPlayerPedId, false)
-		if IsPedInAnyVehicle(localPlayerPedId, true) then
-			FreezeEntityPosition(GetVehiclePedIsIn(localPlayerPedId, true), false)
-		end
-	end
+    if frozen then
+        CreateThread(function()
+            while frozen do
+                FreezeEntityPosition(playerPed, true)
 
-end
+                if IsPedInAnyVehicle(playerPed, false) then
+                    local veh = GetVehiclePedIsIn(playerPed, false)
+                    FreezeEntityPosition(veh, true)
+                end
+
+                -- Disable shooting & movement
+                DisablePlayerFiring(playerPed, true)
+                DisableControlAction(0, 30, true) -- disable move left/right
+                DisableControlAction(0, 31, true) -- disable move fwd/back
+                DisableControlAction(0, 21, true) -- disable sprint
+                DisableControlAction(0, 22, true) -- disable jump
+                DisableControlAction(0, 23, true) -- disable enter vehicle
+                DisableControlAction(0, 24, true) -- disable attack
+
+                Wait(0)
+            end
+        end)
+    else
+        -- Unfreeze
+        FreezeEntityPosition(playerPed, false)
+        if IsPedInAnyVehicle(playerPed, false) then
+            local veh = GetVehiclePedIsIn(playerPed, false)
+            FreezeEntityPosition(veh, false)
+        end
+    end
+end)
 
 RegisterNetEvent("EasyAdmin:CopyDiscord", function(discord)
 	copyToClipboard(discord)
@@ -423,11 +429,6 @@ RegisterCommand("ban", function(source, args, rawCommand)
         })
     end
 end, false)
-
-RegisterNetEvent("EasyAdmin:FreezePlayer", function(toggle)
-	frozen = toggle
-	FreezeMyself(frozen)
-end)
 
 
 RegisterNetEvent("EasyAdmin:CaptureScreenshot", function(toggle, url, field)
