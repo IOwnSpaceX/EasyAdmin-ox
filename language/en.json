@@ -108,7 +108,7 @@
     "checkingallowlist": "Checking allowlist..",
     "bannedjoin": "\nYou have been banned from this Server\n\nReason: %s\n\nBan Expires: %s\nYour Ban ID is #%s.",
     "kicked": "Kicked by %s, Reason: %s",
-    "banned": "You have been banned from this Server, Reason: %s, Ban Expires: %s",
+    "banned": "You have been banned from this Server, Reason: %s, Ban Expires: %s\nPlease rejoin the server to fetch ban details.",
     "reasonadd": " ( Nickname: %s ), Banned by: %s",
     "nongiven": "None Provided",
     "announcement": "Announcement",
