@@ -5,20 +5,20 @@ I created this resource to give a better UI look to EasyAdmin. Now when you use 
 # EasyAdmin-ox ACE PERMS
 
 **Action/Punishment History ACES**
-`add_ace group.NAME easyadmin.player.actionhistory.view`
-`add_ace group.NAME easyadmin.player.actionhistory.add`
-`add_ace group.NAME easyadmin.player.actionhistory.delete`
+`add_ace group.NAME easyadmin.player.actionhistory.view`,
+`add_ace group.NAME easyadmin.player.actionhistory.add`,
+`add_ace group.NAME easyadmin.player.actionhistory.delete`,
 
 **Utility ACES**
-`add_ace group.NAME clockin.bypass`
-`add_ace group.NAME easyadmin.player.noclip allow`
+`add_ace group.NAME clockin.bypass`,
+`add_ace group.NAME easyadmin.player.noclip allow`,
 
 **Revive & Respawn ACES**
-`add_ace group.NAME easyadmin.player.adrev`
-`add_ace group.NAME easyadmin.player.adres`
-`add_ace group.NAME easyadmin.player.adrevall`
-`add_ace group.NAME easyadmin.player.adresall`
+`add_ace group.NAME easyadmin.player.adrev`,
+`add_ace group.NAME easyadmin.player.adres`,
+`add_ace group.NAME easyadmin.player.adrevall`,
+`add_ace group.NAME easyadmin.player.adresall`,
 
 **Jail Function ACES**
-`add_ace group.NAME easyadmin.player.jail allow`
+`add_ace group.NAME easyadmin.player.jail allow`,
 `add_ace group.NAME easyadmin.player.unjail allow`
