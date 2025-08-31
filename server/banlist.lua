@@ -220,13 +220,17 @@ end)
 ---Generates a new unique ban ID
 ---@return number @The next available ban ID
 function GetFreshBanId()
-    if blacklist[#blacklist] then 
-        return blacklist[#blacklist].banid+1
-    else
-        return 1
+    local startId = 100
+    local freshId = startId
+
+    if #Storage.getBanList() > 0 then
+        local lastBan = Storage.getBanList()[#Storage.getBanList()]
+        local lastNum = tonumber(lastBan.banid:match("%d+"))
+        freshId = lastNum + 1
     end
+
+    return "NET-"..freshId
 end
-exports('GetFreshBanId', GetFreshBanId)
 
 
 RegisterCommand("convertbanlist", function(source, args, rawCommand)
