@@ -1,7 +1,5 @@
 # About EasyAdmin-ox
-This resource is just **__EasyAdmin__** by: https://github.com/Blumlaut **(I AM __NOT__ THE ORIGINAL CREATOR)**
-
-I created this resource to give a better UI look to EasyAdmin. Now when you use the menu the ox_lib menu will show up and you can input your options through the menu. Ox_lib by: https://github.com/overextended has helped me to improve this menu. I will try to my best to keep up with EasyAdmin's update frequency so everything custom I put into the menu should remain in working condition. Starring my repos are always helpful and meaningful to me so thank you to anybody who stars my repo. All the original documentation & ace perms can be found here: https://easyadmin.readthedocs.io/en/7.51 all addon ace perms that I or other contributors may have made are listed below!
+Hello, and welcome to EasyAdmin-ox an idea to bring more customizability/tweaks to the already great EasyAdmin menu created by [Blumlaut](https://github.com/Blumlaut). This specific menu takes advantage of the [ox_lib](https://github.com/overextended/ox_lib) library and functions. Thank you so much to [Easyadmin](https://github.com/Blumlaut/EasyAdmin) for the incredible base menu. For documentation and ace perms [click me!](https://easyadmin.readthedocs.io/en/7.51) If you find any issues please feel free to make an [issues request](https://github.com/IOwnSpaceX/EasyAdmin-ox/issues) or if you know how to solve the issue create a [pull request](https://github.com/IOwnSpaceX/EasyAdmin-ox/pulls) and I will lookover your changes. For addon ace perms that have been created by I and other creators please scroll down. 👇
 
 # EasyAdmin-ox Ace Perms
 **Action/Punishment History ACES:**
