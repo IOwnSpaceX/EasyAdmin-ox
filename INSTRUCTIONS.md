@@ -16,6 +16,8 @@ Please add "set ea_DutySystemEnabled true" to your "server.cfg" to enable the du
 
 EXAMPLE IN SERVER.CFG (DO NOT add quotation marks!): set ea_DutySystemEnabled true
 
+*IMPORTANT* - When using the noclip system from EasyAdmin-ox be sure to disable noclip in vMenu!
+
 
 IF YOU HAVE ANY ISSUES WITH THE RESOURCE YOU CAN ADD ME ON DISCORD @iownspacex
 Thank you! :)
