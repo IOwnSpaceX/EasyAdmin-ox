@@ -527,8 +527,25 @@ function GenerateMenu()
 					name = GetPlayerName(thePlayer)
 				}
 			end
-			local thisPlayerMenu = _menuPool:AddSubMenu(playermanagement, "[" .. thePlayer.id .. "] " .. thePlayer.name,
-				"", true)
+			local description = ""
+
+			if not thePlayer.hideRank then
+				
+				if thePlayer.clockedIn ~= nil then
+					description = thePlayer.clockedIn and "~g~Clocked In" or "~r~Clocked Out"
+				end
+
+				if thePlayer.rank then
+					if description ~= "" then
+						description = description .. "\n"
+					end
+					description = description .. "~b~" .. thePlayer.rank
+				end
+			end
+
+			local thisPlayerMenu = _menuPool:AddSubMenu(playermanagement, 
+				"[" .. thePlayer.id .. "] " .. thePlayer.name, 
+				description, true)
 			if not RedM and thePlayer.developer then
 				thisPlayerMenu.ParentItem:SetRightBadge(23)
 			elseif not RedM and thePlayer.contributor then
@@ -540,6 +557,11 @@ function GenerateMenu()
 
 			playerMenus[tostring(thePlayer.id)].generate = function(menu)
 				thisPlayer = menu
+
+				if thePlayer.rank or thePlayer.clockedIn ~= nil then
+				local rankText = thePlayer.hideRank and "~c~Hidden" or (thePlayer.rank or "None")
+				local clockText = (thePlayer.clockedIn == true) and "~g~Clocked In" or "~r~Clocked Out"
+			end
 
 				if GetConvar("ea_enableActionHistory", "true") == "true" and permissions["player.actionhistory.view"] then
 						local actionHistoryMenu = _menuPool:AddSubMenu(thisPlayer, GetLocalisedText("actionhistory"),
@@ -2221,3 +2243,14 @@ function DrawPlayerInfoLoop()
 		end
 	end)
 end
+
+RegisterNetEvent("EasyAdmin:ShowRankNotification")
+AddEventHandler("EasyAdmin:ShowRankNotification", function(type, message)
+    lib.notify({
+        title = 'EasyAdmin',
+        description = message,
+        type = type,
+        position = 'top-right',
+        duration = 5000
+    })
+end)
