@@ -33,7 +33,20 @@ end)
 
 function cachePlayer(playerId)
 	if not CachedPlayers[playerId] then
-		CachedPlayers[playerId] = { id = playerId, name = getName(playerId, true), identifiers = getAllPlayerIdentifiers(playerId), immune = DoesPlayerHavePermission(playerId, "immune"), discord = GetPlayerIdentifierByType(playerId, 'discord') and GetPlayerIdentifierByType(playerId, 'discord'):gsub("discord:", "") or false }
+		CachedPlayers[playerId] = { 
+			id = playerId, 
+			name = getName(playerId, true), 
+			identifiers = getAllPlayerIdentifiers(playerId), 
+			immune = DoesPlayerHavePermission(playerId, "immune"), 
+			discord = GetPlayerIdentifierByType(playerId, 'discord') and GetPlayerIdentifierByType(playerId, 'discord'):gsub("discord:", "") or false 
+		}
+		
+		-- Rank System
+		CachedPlayers[playerId].rank = GetPlayerStaffRank(playerId)
+		if CachedPlayers[playerId].hideRank == nil then
+			CachedPlayers[playerId].hideRank = false
+		end
+		
 		PrintDebugMessage(getName(playerId).." has been added to cache.", 4)
 		return CachedPlayers[playerId]
 	end
@@ -65,3 +78,32 @@ AddEventHandler('playerDropped', function (reason)
 		CachedPlayers[source].dropped = true
 	end
 end)
+
+function GetPlayerStaffRank(src)
+    if not Config or not Config.StaffRanks then
+        local configFile = LoadResourceFile(GetCurrentResourceName(), "plugins/rank_config.lua")
+        if configFile then
+            load(configFile)()
+            print("^2[EasyAdmin] Rank config loaded successfully.^7")
+        else
+            print("^1[EasyAdmin] WARNING: Could not load plugins/rank_config.lua^7")
+            return GetDefaultPlayerStaffRank(src)
+        end
+    end
+
+    for _, perm in ipairs(Config.RankOrder or {}) do
+        if DoesPlayerHavePermission(src, perm) then
+            return Config.StaffRanks[perm] or "Staff"
+        end
+    end
+
+    return "Staff"
+end
+
+function GetDefaultPlayerStaffRank(src)
+    if DoesPlayerHavePermission(src, "easyadmin.stafftag.owner") then return "Owner" end
+    if DoesPlayerHavePermission(src, "easyadmin.stafftag.admin") then return "Admin" end
+    if DoesPlayerHavePermission(src, "easyadmin.stafftag.mod") then return "Moderator" end
+    if DoesPlayerHavePermission(src, "easyadmin") then return "Staff" end
+    return "Player"
+end
