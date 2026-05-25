@@ -42,6 +42,10 @@ client_scripts {
     "liam-jail/client.lua"
 }
 
+plugins {
+    "plugins/rank_config.lua"
+}
+
 ui_page "dependencies/nui/index.html"
 
 files {
