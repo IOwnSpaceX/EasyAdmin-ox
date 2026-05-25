@@ -197,7 +197,18 @@ RegisterServerEvent("EasyAdmin:GetInfinityPlayerList", function()
 		for i, player in pairs(players) do
 			local player = tonumber(player)
 			local cachedPlayer = cachePlayer(player)
-			local pData = { id = cachedPlayer.id, name = cachedPlayer.name, immune = cachedPlayer.immune, discord = cachedPlayer.discord, contributor = Contributors[cachedPlayer.discord], developer = cachedPlayer.discord == "178889658128793600" }
+			local state = Player(player).state
+			local pData = { 
+				id = cachedPlayer.id, 
+				name = cachedPlayer.name, 
+				immune = cachedPlayer.immune, 
+				discord = cachedPlayer.discord, 
+				contributor = Contributors[cachedPlayer.discord], 
+				developer = cachedPlayer.discord == "178889658128793600",
+				rank = cachedPlayer.rank,
+				hideRank = cachedPlayer.hideRank,
+				clockedIn = state['easyadmin-ox:clockedIn'] == 'yes'
+			}
 
 			l[#l + 1] = pData
 		end
@@ -1208,3 +1219,26 @@ CreateThread(function()
         end
     end
 end)
+
+RegisterCommand("togglerank", function(source, args, rawCommand)
+    local src = source
+    if src == 0 then return end
+
+    if not DoesPlayerHavePermission(src, "easyadmin.hideownrank") then
+        TriggerClientEvent("EasyAdmin:ShowRankNotification", src, "error", "You do not have permission to hide your rank.")
+        return
+    end
+
+    local cached = cachePlayer(src)
+    cached.hideRank = not (cached.hideRank or false)
+
+    local status = cached.hideRank and "HIDDEN" or "VISIBLE"
+    local notifyType = cached.hideRank and "error" or "success"
+
+    TriggerClientEvent("EasyAdmin:ShowRankNotification", src, notifyType, "Your rank is now " .. status)
+
+    TriggerClientEvent("EasyAdmin:RefreshPlayerList", -1)
+end, false, {
+    help = "Toggle whether your staff rank is visible in the EasyAdmin player list."
+})
+TriggerEvent('chat:addSuggestion', '/togglerank', 'Toggle your staff rank visibility in EasyAdmin', {})
