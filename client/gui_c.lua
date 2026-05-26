@@ -1969,6 +1969,20 @@ function GenerateMenu()
 		end
 	end
 
+	local thisItem = NativeUI.CreateCheckboxItem("Show Player Names", showPlayerNames, "Show names above players")
+    settingsMenu:AddItem(thisItem)
+    thisItem.CheckboxEvent = function(sender, item, checked)
+        showPlayerNames = checked
+        TriggerEvent('easyadmin:settingChanged', "showPlayerNames", checked)
+    end
+
+    local thisItem2 = NativeUI.CreateCheckboxItem("Show Own Name", showOwnName, "Show your own name above your head")
+    settingsMenu:AddItem(thisItem2)
+    thisItem2.CheckboxEvent = function(sender, item, checked)
+        showOwnName = checked
+        TriggerEvent('easyadmin:settingChanged', "showOwnName", checked)
+    end
+
 	if permissions["player.ban.view"] then
 		local sl = { GetLocalisedText("unbanreasons"), GetLocalisedText("unbanlicenses") }
 		local thisItem = NativeUI.CreateListItem(GetLocalisedText("banlistshowtype"), sl, 1,
