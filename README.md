@@ -1,3 +1,5 @@
+For this resource to work the resource must be named `EasyAdmin-ox` or else the duty system and other features will break!
+
 * **Important** updates have been pushed out since 05/25/2026. This is your notice to update EasyAdmin-ox to the newest version that I have posted. In this new update to EasyAdmin have have cleaned up some of the errors regarding the bot. I have also pushed out EasyAdmin Staff Tags. Now you can see which staff members are clocked in and see their rank. I have also added a system in which you can hide your tag if you have the correct ace permissions to do so. I have also made a show player names function that allows you to see other players names through EasyAdmin (disable in vMenu) and turns green when the player is clocked in showing their staff rank. To edit this system please use `plugins/rank_config.lua`. Thank you for using my modified EA!
 
 # About EasyAdmin-ox
