@@ -2254,3 +2254,173 @@ AddEventHandler("EasyAdmin:ShowRankNotification", function(type, message)
         duration = 5000
     })
 end)
+
+local disPlayerNames = 150.0
+local showPlayerNames = false
+local showRanks = true
+local showOwnName = true
+
+local ClientCachedPlayers = {}
+
+local Config = {}
+local rankConfig = LoadResourceFile(GetCurrentResourceName(), "plugins/rank_config.lua")
+
+if rankConfig then
+    load(rankConfig)()
+end
+
+local function DrawText3D(x, y, z, text, r, g, b)
+    local onScreen, screenX, screenY = World3dToScreen2d(x, y, z)
+
+    if not onScreen then
+        return
+    end
+
+    local camCoords = GetGameplayCamCoords()
+    local dist = #(camCoords - vector3(x, y, z))
+
+    local scale = (1 / (dist + 1.0)) * 2.0
+    local fov = (1 / GetGameplayCamFov()) * 100.0
+    scale = scale * fov
+
+    SetTextScale(0.55 * scale, 0.55 * scale)
+
+    SetTextFont(4)
+    SetTextProportional(1)
+
+    SetTextColour(r, g, b, 255)
+
+    SetTextDropshadow(0, 0, 0, 0, 255)
+    SetTextEdge(2, 0, 0, 0, 150)
+
+    SetTextDropShadow()
+    SetTextOutline()
+
+    SetTextCentre(true)
+    SetTextEntry("STRING")
+
+    AddTextComponentString(text)
+
+    DrawText(screenX, screenY)
+end
+
+RegisterNetEvent("EasyAdmin:fillCachedPlayers")
+AddEventHandler("EasyAdmin:fillCachedPlayers", function(cachedData)
+    ClientCachedPlayers = cachedData or {}
+end)
+
+Citizen.CreateThread(function()
+    while true do
+
+        local localOnDuty = LocalPlayer.state["easyadmin-ox:clockedIn"] == "yes"
+
+        if not showPlayerNames or not localOnDuty then
+            Citizen.Wait(500)
+            goto continue
+        end
+
+        local myPed = PlayerPedId()
+
+        if not DoesEntityExist(myPed) then
+            Citizen.Wait(1000)
+            goto continue
+        end
+
+        local myCoords = GetEntityCoords(myPed)
+        local myPlayerId = PlayerId()
+
+        for _, playerId in ipairs(GetActivePlayers()) do
+            local targetPed = GetPlayerPed(playerId)
+
+            if targetPed == 0 or not DoesEntityExist(targetPed) then
+                goto nextPlayer
+            end
+
+            local targetCoords = GetEntityCoords(targetPed)
+            local distance = #(myCoords - targetCoords)
+
+            if distance > disPlayerNames then
+                goto nextPlayer
+            end
+
+            local isSelf = (playerId == myPlayerId)
+
+            local isOnDuty = false
+
+            if isSelf then
+                isOnDuty = localOnDuty
+            else
+                isOnDuty = Player(playerId).state["easyadmin-ox:clockedIn"] == "yes"
+            end
+
+            local shouldShow = false
+
+            if isSelf then
+                shouldShow = showOwnName and localOnDuty
+            else
+                shouldShow = isOnDuty and localOnDuty
+            end
+
+            if not shouldShow then
+                goto nextPlayer
+            end
+
+            local serverId = GetPlayerServerId(playerId)
+            local cached = ClientCachedPlayers[serverId] or {}
+
+            local playerName = GetPlayerName(playerId) or "Unknown"
+
+            local text = string.format("[%s] %s", serverId, playerName)
+
+            local hasRank = (
+                showRanks and
+                cached.rank and
+                cached.rank ~= "" and
+                not (cached.hideRank or false)
+            )
+
+            if hasRank then
+                text = string.format("[%s] %s", cached.rank, text)
+            end
+
+            local r, g, b = 255, 255, 255
+
+            if isOnDuty then
+                r, g, b = 80, 255, 120
+            end
+
+            local zOffset = isSelf and 1.35 or 1.05
+            zOffset = zOffset + (distance * 0.008)
+
+            DrawText3D(
+                targetCoords.x,
+                targetCoords.y,
+                targetCoords.z + zOffset,
+                text,
+                r,
+                g,
+                b
+            )
+
+            ::nextPlayer::
+        end
+
+        Citizen.Wait(0)
+
+        ::continue::
+    end
+end)
+
+RegisterNetEvent("easyadmin:settingChanged")
+AddEventHandler("easyadmin:settingChanged", function(setting, value)
+
+    if setting == "showPlayerNames" then
+        showPlayerNames = value
+
+    elseif setting == "showRanksInHeadtags" then
+        showRanks = value
+
+    elseif setting == "showOwnName" then
+        showOwnName = value
+    end
+end)
