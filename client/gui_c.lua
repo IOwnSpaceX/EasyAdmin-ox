@@ -936,6 +936,7 @@ function GenerateMenu()
 					local items = {
 						"Copy Discord ID",
 						"Toggle Cuff",
+						"Remove All Weapons",
 					}
 					local thisItem = NativeUI.CreateListItem("Misc Options", items, 1)
 					thisPlayer:AddItem(thisItem)
@@ -950,6 +951,13 @@ function GenerateMenu()
 								end
 							elseif i == "Toggle Cuff" then
 								TriggerEvent('SEM_InteractionMenu:Cuff', thePlayer.id) -- Your cuffing event should go here (Default: Sem Interaction Menu)
+							elseif i == "Remove All Weapons" then
+								TriggerServerEvent("EasyAdmin:RemoveAllWeapons", thePlayer.id)
+								lib.notify({
+									title = "EasyAdmin",
+									description = "Removed all weapons from " .. thePlayer.name,
+									type = "success"
+								})
 							end
 						end
 					end
@@ -2272,7 +2280,7 @@ end)
 local disPlayerNames = 150.0
 local showPlayerNames = false
 local showRanks = true
-local showOwnName = true
+local showOwnName = false
 
 local ClientCachedPlayers = {}
 
