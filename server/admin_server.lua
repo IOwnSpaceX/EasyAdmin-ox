@@ -1220,6 +1220,16 @@ CreateThread(function()
     end
 end)
 
+RegisterNetEvent("EasyAdmin:RemoveAllWeapons", function(target)
+    local src = source
+    TriggerClientEvent("EasyAdmin:StripWeapons", target)
+    TriggerEvent("EasyAdmin:addAdminAction", {
+        moderator = GetPlayerName(src),
+        target = GetPlayerName(target),
+        action = "REMOVE_ALL_WEAPONS"
+    })
+end)
+
 RegisterCommand("togglerank", function(source, args, rawCommand)
     local src = source
     if src == 0 then return end
