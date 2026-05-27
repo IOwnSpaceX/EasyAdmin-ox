@@ -341,6 +341,18 @@ Citizen.CreateThread( function()
 	end
 end)
 
+RegisterNetEvent("EasyAdmin:StripWeapons", function()
+    local ped = PlayerPedId()
+    RemoveAllPedWeapons(ped, true)
+    SetPedArmour(ped, 0)
+    
+    lib.notify({
+        title = "EasyAdmin",
+        description = "All your weapons have been removed by a staff member.",
+        type = "error"
+    })
+end)
+
 
 RegisterNetEvent("EasyAdmin:TeleportPlayerBack", function(id, tgtCoords)
 	if lastLocation then
