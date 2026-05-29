@@ -2368,7 +2368,6 @@ Citizen.CreateThread(function()
             local isSelf = (playerId == myPlayerId)
 
             local isOnDuty = false
-
             if isSelf then
                 isOnDuty = localOnDuty
             else
@@ -2378,9 +2377,9 @@ Citizen.CreateThread(function()
             local shouldShow = false
 
             if isSelf then
-                shouldShow = showOwnName and localOnDuty
+                shouldShow = showOwnName
             else
-                shouldShow = isOnDuty and localOnDuty
+                shouldShow = true
             end
 
             if not shouldShow then
