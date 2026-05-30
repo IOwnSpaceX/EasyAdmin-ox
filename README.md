@@ -28,3 +28,8 @@ Hello, and welcome to EasyAdmin-ox an idea to bring more customizability/tweaks 
 
 **Rank System ACES:**
 * `add_ace group.NAME easyadmin.hideownrank allow`
+
+
+
+https://github.com/user-attachments/assets/75fefa1f-dea6-45e2-8855-7cf27cd67ad5
+
