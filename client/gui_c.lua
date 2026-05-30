@@ -1290,54 +1290,81 @@ function GenerateMenu()
 							thisCachedPlayerMenu.ParentItem.Activated = function(ParentMenu, SelectedItem)
 								thisPlayer = thisCachedPlayerMenu
 								if not cachedMenus[tostring(cachedplayer.id)].generated then
-									local thisBanMenu = _menuPool:AddSubMenu(thisPlayer, GetLocalisedText("banplayer"),
-										"", true)
-									thisBanMenu:SetMenuWidthOffset(menuWidth)
-
-									local thisItem = NativeUI.CreateItem(GetLocalisedText("reason"),
-										GetLocalisedText("banreasonguide"))
-									thisBanMenu:AddItem(thisItem)
-									BanReason = GetLocalisedText("noreason")
-									thisItem:RightLabel(BanReason)
-									thisItem.Activated = function(ParentMenu, SelectedItem)
-										local result = displayKeyboardInput("FMMC_KEY_TIP8", "", 128)
-										local formattedResult = formatRightString(formatShortcuts(result))
-
-										if result and result ~= "" then
-											BanReason = result
-											thisItem:RightLabel(formattedResult)
-										else
-											BanReason = GetLocalisedText("noreason")
-										end
-									end
-									local bt = {}
-									for i, a in ipairs(banLength) do
-										table.insert(bt, a.label)
-									end
-
-									local thisItem = NativeUI.CreateListItem(GetLocalisedText("banlength"), bt, 1,
-										GetLocalisedText("banlengthguide"))
-									thisBanMenu:AddItem(thisItem)
-									local BanTime = 1
-									thisItem.OnListChanged = function(sender, item, index)
-										BanTime = index
-									end
-
-									local thisItem = NativeUI.CreateItem(GetLocalisedText("confirmban"),
-										GetLocalisedText("confirmbanguide"))
-									thisBanMenu:AddItem(thisItem)
-									thisItem.Activated = function(ParentMenu, SelectedItem)
-										if BanReason == "" then
-											BanReason = GetLocalisedText("noreason")
-										end
-										TriggerServerEvent("EasyAdmin:offlinebanPlayer", cachedplayer.id, BanReason,
-											banLength[BanTime].time, cachedplayer.name)
-										BanTime = 1
-										BanReason = ""
-										_menuPool:CloseAllMenus()
-										Citizen.Wait(800)
-										GenerateMenu()
-										playermanagement:Visible(true)
+									local thisBanItem = NativeUI.CreateItem(GetLocalisedText("banplayer"), "")
+									thisPlayer:AddItem(thisBanItem)
+									thisBanItem.Activated = function(ParentMenu, SelectedItem)
+									    _menuPool:CloseAllMenus()
+									    Citizen.Wait(200)
+									
+									    local input = lib.inputDialog('Ban Details', {
+									        { type = 'input',  label = 'Reason for Ban', description = 'Provide a reason for banning the player.',                           required = true, min = 3,   max = 128 },
+									        {
+									            type = 'select',
+									            label = 'Ban Duration',
+									            description = 'Select the duration of the ban.',
+									            options = {
+									                { label = 'Hour(s)',   value = 'hours' },
+									                { label = 'Day(s)',    value = 'days' },
+									                { label = 'Month(s)',  value = 'months' },
+									                { label = 'Year(s)',   value = 'years' },
+									                { label = 'Permanent', value = 'permanent' }
+									            },
+									            required = true,
+									            searchable = true,
+									            clearable = true
+									        },
+									        { type = 'number', label = 'Ban Duration',   description = 'Specify the length of the ban time. If Permanent IGNORE Box Below!', min = 1,         max = 300, step = 10, default = 0, required = true }
+									    })
+									
+									    if not input then return end
+									
+									    local BanReason = input[1]
+									    local BanDurationType = input[2]
+									    local BanDurationAmount = tonumber(input[3]) or 0
+									
+									    if not BanReason or BanReason == "" then
+									        BanReason = GetLocalisedText("noreason")
+									    end
+									
+									    local BanLength
+									    if BanDurationType == 'permanent' then
+									        BanLength = 10444633200
+									    elseif BanDurationType == 'hours' then
+									        BanLength = BanDurationAmount * 3600
+									    elseif BanDurationType == 'days' then
+									        BanLength = BanDurationAmount * 86400
+									    elseif BanDurationType == 'months' then
+									        BanLength = BanDurationAmount * 2678400
+									    elseif BanDurationType == 'years' then
+									        BanLength = BanDurationAmount * 31536000
+									    else
+									        return
+									    end
+									
+									    local banSuccess, banErr = pcall(function()
+									        TriggerServerEvent("EasyAdmin:offlinebanPlayer", cachedplayer.id, BanReason,
+									            BanLength, cachedplayer.name)
+									    end)
+									
+									    if banSuccess then
+									        lib.notify({
+									            title = 'Player Banned',
+									            description = cachedplayer.name .. ' has been banned. Reason: ' .. BanReason,
+									            type = 'success',
+									            duration = 5000
+									        })
+									    else
+									        lib.notify({
+									            title = 'Ban Failed',
+									            description = 'An error occurred while trying to ban ' .. cachedplayer.name .. '.',
+									            type = 'error',
+									            duration = 5000
+									        })
+									    end
+									
+									    Citizen.Wait(800)
+									    GenerateMenu()
+									    playermanagement:Visible(true)
 									end
 									TriggerEvent("EasyAdmin:BuildCachedOptions", cachedplayer.id)
 									for i, plugin in pairs(plugins) do
