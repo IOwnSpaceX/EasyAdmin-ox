@@ -652,6 +652,111 @@ function GenerateMenu()
 						end)
 					end
 
+				if permissions["viewdeathkillhistory"] then
+					do
+						local deathMenu = _menuPool:AddSubMenu(thisPlayer, "~b~Recent Deaths/Kills", "", true)
+						deathMenu:SetMenuWidthOffset(menuWidth)
+
+						local function FormatAge(seconds)
+							if seconds < 60 then
+								return seconds .. "s ago"
+							elseif seconds < 3600 then
+								local m = math.floor(seconds / 60)
+								local s = seconds % 60
+								return m .. "m " .. s .. "s ago"
+							else
+								local h = math.floor(seconds / 3600)
+								local m = math.floor((seconds % 3600) / 60)
+								return h .. "h " .. m .. "m ago"
+							end
+						end
+
+						local function PopulateDeathMenu()
+							deathMenu:Clear()
+
+							local refreshItem = NativeUI.CreateItem("Refresh Recent Deaths/Kills", "")
+							deathMenu:AddItem(refreshItem)
+							refreshItem.Activated = function()
+								EADeathData = nil
+								TriggerServerEvent("EasyAdmin:RequestPlayerDeaths", thePlayer.id)
+								local waited = 0
+								CreateThread(function()
+									repeat
+										Wait(100)
+										waited = waited + 1
+									until EADeathData or waited > 30
+									PopulateDeathMenu()
+									deathMenu:RefreshIndex()
+								end)
+							end
+
+							local data = EADeathData
+
+							if not data then
+								local loadingItem = NativeUI.CreateItem("~c~Loading...", "")
+								deathMenu:AddItem(loadingItem)
+								return
+							end
+
+							local deathHeader = NativeUI.CreateItem("~o~Recent Deaths", "")
+							deathMenu:AddItem(deathHeader)
+
+							if #data.deaths == 0 then
+								local noneItem = NativeUI.CreateItem("~c~No Recent Deaths", "")
+								deathMenu:AddItem(noneItem)
+							else
+								for _, row in ipairs(data.deaths) do
+									local e    = row.entry
+									local age  = FormatAge(row.age)
+									local label = age .. " | " .. e.victimName
+									local killerLabel = e.killerId and ("[" .. e.killerId .. "] " .. e.killerName) or e.killerName
+									local desc  = "Weapon: " .. e.weapon .. " - Hit: " .. e.hitBone ..
+									              "\nKiller: " .. killerLabel
+									local item = NativeUI.CreateItem(label, desc)
+									deathMenu:AddItem(item)
+								end
+							end
+
+							local killHeader = NativeUI.CreateItem("~o~Recent Kills", "")
+							deathMenu:AddItem(killHeader)
+
+							if #data.kills == 0 then
+								local noneItem = NativeUI.CreateItem("~c~No Recent Kills", "")
+								deathMenu:AddItem(noneItem)
+							else
+								for _, row in ipairs(data.kills) do
+									local e    = row.entry
+									local age  = FormatAge(row.age)
+									local label = age .. " | [" .. e.victimId .. "] " .. e.victimName
+									local desc  = "Weapon: " .. e.weapon .. " - Hit: " .. e.hitBone ..
+									              "\nVictim: [" .. e.victimId .. "] " .. e.victimName
+									local item = NativeUI.CreateItem(label, desc)
+									deathMenu:AddItem(item)
+								end
+							end
+
+							deathMenu:RefreshIndex()
+						end
+
+						deathMenu.ParentItem.Activated = function()
+							EADeathData = nil
+							TriggerServerEvent("EasyAdmin:RequestPlayerDeaths", thePlayer.id)
+							local waited = 0
+							CreateThread(function()
+								repeat
+									Wait(100)
+									waited = waited + 1
+								until EADeathData or waited > 30
+								PopulateDeathMenu()
+								deathMenu:RefreshIndex()
+							end)
+						end
+
+						local loadingItem = NativeUI.CreateItem("~c~Loading...", "")
+						deathMenu:AddItem(loadingItem)
+					end
+				end
+
 				if not playerMenus[tostring(thePlayer.id)].generated then
 					if permissions["player.kick"] then
 						local thisItem = NativeUI.CreateItem(GetLocalisedText("kickplayer"),
