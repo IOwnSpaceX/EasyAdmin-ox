@@ -31,7 +31,7 @@ local function HasDutyBypass(source)
     if not Config.BypassSystem.enabled then return false end
     local hasBypass = IsPlayerAceAllowed(source, Config.BypassSystem.bypassPermission)
     if hasBypass and IsDutySystemEnabled() then
-        Player(source).state['easyadmin-ox:clockedIn'] = 'yes'
+        Player(source).state:set('easyadmin-ox:clockedIn', 'yes', true)
     end
     return hasBypass
 end
@@ -112,7 +112,7 @@ RegisterCommand("clockin", function(source, args, rawCommand)
             return
         elseif CheckCooldown(source) then
             if Player(source).state['easyadmin-ox:clockedIn'] == 'no' or Player(source).state['easyadmin-ox:clockedIn'] == nil then
-                Player(source).state['easyadmin-ox:clockedIn'] = 'yes'
+                Player(source).state:set('easyadmin-ox:clockedIn', 'yes', true)
                 TriggerClientEvent('ox_lib:notify', source, {
                     title = 'Staff Clock In',
                     description = 'You have clocked on as staff!',
@@ -142,7 +142,7 @@ RegisterCommand("clockout", function(source, args, rawCommand)
         end
     
         if HasDutyBypass(source) then
-            Player(source).state['easyadmin-ox:clockedIn'] = 'no'
+            Player(source).state:set('easyadmin-ox:clockedIn', 'no', true)
             TriggerClientEvent('ox_lib:notify', source, {
                 title = 'Staff Clock Out',
                 description = 'You may clockin freely due to bypass.',
@@ -150,7 +150,7 @@ RegisterCommand("clockout", function(source, args, rawCommand)
             })
             SendWebhook(source, "Clock Out (Bypass)")
         elseif Player(source).state['easyadmin-ox:clockedIn'] == 'yes' then
-            Player(source).state['easyadmin-ox:clockedIn'] = 'no'
+            Player(source).state:set('easyadmin-ox:clockedIn', 'no', true)
             playerCooldowns[source] = os.time()
             TriggerClientEvent('ox_lib:notify', source, {
                 title = 'Staff Clock Out',
