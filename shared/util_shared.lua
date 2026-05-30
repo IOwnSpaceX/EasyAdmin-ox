@@ -22,6 +22,7 @@ permissions = {
 	["player.actionhistory.view"] = false,
 	["player.actionhistory.add"] = false,
 	["player.actionhistory.delete"] = false,
+	["player.viewdeathkillhistory"] = false,
 	
 	["server.cleanup.cars"] = false,
 	["server.cleanup.props"] = false,
