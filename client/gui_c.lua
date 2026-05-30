@@ -652,7 +652,7 @@ function GenerateMenu()
 						end)
 					end
 
-				if permissions["viewdeathkillhistory"] then
+				if permissions["player.viewdeathkillhistory"] then
 					do
 						local deathMenu = _menuPool:AddSubMenu(thisPlayer, "~b~Recent Deaths/Kills", "", true)
 						deathMenu:SetMenuWidthOffset(menuWidth)
