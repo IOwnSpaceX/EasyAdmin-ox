@@ -2368,11 +2368,12 @@ Citizen.CreateThread(function()
             local isSelf = (playerId == myPlayerId)
 
             local isOnDuty = false
-            if isSelf then
-                isOnDuty = localOnDuty
-            else
-                isOnDuty = Player(playerId).state["easyadmin-ox:clockedIn"] == "yes"
-            end
+			if isSelf then
+				isOnDuty = localOnDuty
+			else
+				local theirServerId = GetPlayerServerId(playerId)
+				isOnDuty = Player(theirServerId).state["easyadmin-ox:clockedIn"] == "yes"
+			end
 
             local shouldShow = false
 
