@@ -72,10 +72,21 @@ function getCachedPlayer(id)
 end
 exports('getCachedPlayer', getCachedPlayer)
 
-AddEventHandler('playerDropped', function (reason)
+AddEventHandler('playerDropped', function(reason)
 	if CachedPlayers[source] then
 		CachedPlayers[source].droppedTime = os.time()
 		CachedPlayers[source].dropped = true
+		CachedPlayers[source].dropReason = tostring(reason or "")
+
+		local lowerReason = string.lower(CachedPlayers[source].dropReason)
+
+		if lowerReason:find("crash") or lowerReason:find("timed out") then
+			CachedPlayers[source].dropStatus = "~r~CRASHED"
+		elseif lowerReason:find("quit") or lowerReason:find("exiting") then
+			CachedPlayers[source].dropStatus = "~g~EXITED"
+		else
+			CachedPlayers[source].dropStatus = "~o~DISCONNECTED"
+		end
 	end
 end)
 
