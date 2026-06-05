@@ -537,9 +537,20 @@ end
 
 RegisterNetEvent("EasyAdmin:showNotification", function(text, important)
 	TriggerEvent("EasyAdmin:receivedNotification")
-	if not WasEventCanceled() then
-		ShowNotification(text)
+
+	if WasEventCanceled() then
+		return
 	end
+
+	local message = tostring(text)
+	local duration = math.min(math.max(#message * 65, 5000), 15000)
+
+	lib.notify({
+		title = 'EasyAdmin',
+		description = tostring(text),
+		type = important and 'error' or 'inform',
+		position = 'top-right'
+	})
 end)
 
 -- NOCLIP BY: LIAM & SAXON :)
