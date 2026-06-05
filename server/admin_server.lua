@@ -1252,3 +1252,317 @@ end, false, {
     help = "Toggle whether your staff rank is visible in the EasyAdmin player list."
 })
 TriggerEvent('chat:addSuggestion', '/togglerank', 'Toggle your staff rank visibility in EasyAdmin', {})
+
+--OX_TARGET--
+
+-- KICK
+RegisterNetEvent('ea:target:kick')
+AddEventHandler('ea:target:kick', function(target, reason)
+    local src = source
+
+    if not DoesPlayerHavePermission(src, "player.kick") then
+        return
+    end
+
+    if not CachedPlayers[target] or CachedPlayers[target].immune then
+        TriggerClientEvent('ox_lib:notify', src, {
+            title = 'Action Failed',
+            description = 'Player is immune or not found.',
+            type = 'error'
+        })
+        return
+    end
+
+    reason = formatShortcuts(reason)
+    SendWebhookMessage(moderationNotification, string.format(GetLocalisedText("adminkickedplayer"), getName(src, false, true), getName(target, true, true), reason), "kick", 16711680)
+
+    if GetConvar("ea_enableActionHistory", "true") == "true" then
+        Storage.addAction("~r~KICKED~w~~s~", CachedPlayers[target].discord, reason, getName(src), CachedPlayers[src].discord)
+    end
+
+    DropPlayer(target, string.format(GetLocalisedText("kicked"), getName(src), reason))
+
+    TriggerClientEvent('ox_lib:notify', src, {
+        title = 'Player Kicked',
+        description = getName(target) .. ' has been kicked. Reason: ' .. reason,
+        type = 'success'
+    })
+end)
+
+-- BAN
+RegisterNetEvent('ea:target:ban')
+AddEventHandler('ea:target:ban', function(target, reason, expire)
+    local src = source
+
+    if not DoesPlayerHavePermission(src, "player.ban.temporary") then
+        return
+    end
+
+    if not CachedPlayers[target] or CachedPlayers[target].immune then
+        TriggerClientEvent('ox_lib:notify', src, {
+            title = 'Action Failed',
+            description = 'Player is immune or not found.',
+            type = 'error'
+        })
+        return
+    end
+
+    TriggerEvent(
+        "EasyAdmin:addBan",
+        target,
+        reason,
+        expire,
+        getName(src, true)
+    )
+
+    TriggerClientEvent('ox_lib:notify', src, {
+        title = 'Player Banned',
+        description = getName(target) .. ' has been banned. Reason: ' .. reason,
+        type = 'success'
+    })
+end)
+
+-- WARN
+RegisterNetEvent('ea:target:warn')
+AddEventHandler('ea:target:warn', function(target, reason)
+    local src = source
+
+    if not DoesPlayerHavePermission(src, "player.warn") then
+        return
+    end
+
+    if not CachedPlayers[target] or CachedPlayers[target].immune then
+        TriggerClientEvent('ox_lib:notify', src, {
+            title = 'Action Failed',
+            description = 'Player is immune or not found.',
+            type = 'error'
+        })
+        return
+    end
+
+    reason = formatShortcuts(reason)
+    local maxWarnings = GetConvarInt("ea_maxWarnings", 3)
+
+    if not WarnedPlayers[target] then
+        WarnedPlayers[target] = { name = getName(target, true), identifiers = getAllPlayerIdentifiers(target), warns = 0 }
+    end
+
+    WarnedPlayers[target].warns = WarnedPlayers[target].warns + 1
+
+    TriggerClientEvent('chat:addMessage', target, {
+        template = '<div style="padding: 0.5vw; margin: 0.5vw; background-color: rgba(253, 53, 53, 0.6); border-radius: 5px;"><i class="fas fa-user-crown"></i> {0} </div>',
+        args = { string.format(GetLocalisedText("warned"), reason, WarnedPlayers[target].warns, maxWarnings) },
+        color = { 255, 255, 255 }
+    })
+
+    TriggerClientEvent("txcl:showWarning", target, getName(src), string.format(GetLocalisedText("warned"), reason, WarnedPlayers[target].warns, maxWarnings), GetLocalisedText("warnedtitle"), GetLocalisedText("warnedby"), GetLocalisedText("warndismiss"))
+
+    SendWebhookMessage(moderationNotification, string.format(GetLocalisedText("adminwarnedplayer"), getName(src, false, true), getName(target, true, true), reason, WarnedPlayers[target].warns, maxWarnings), "warn", 16711680)
+
+    Storage.addAction("~y~WARNED~w~~s~", CachedPlayers[target].discord, reason, getName(src), CachedPlayers[src].discord)
+
+    TriggerClientEvent('ox_lib:notify', src, {
+        title = 'Warning Issued',
+        description = getName(target) .. ' has been warned. Reason: ' .. reason,
+        type = 'success'
+    })
+end)
+
+-- JAIL
+RegisterNetEvent('ea:target:jail')
+AddEventHandler('ea:target:jail', function(target, time, reason)
+    local src = source
+
+    if not DoesPlayerHavePermission(src, "player.jail") then
+        return
+    end
+
+    if not CachedPlayers[target] then
+        TriggerClientEvent('ox_lib:notify', src, {
+            title = 'Action Failed',
+            description = 'Player not found.',
+            type = 'error'
+        })
+        return
+    end
+
+    TriggerEvent("Liam:JailPlayerServer", target, time, reason, src)
+
+    SendWebhookMessage(moderationNotification, string.format("[%s] jailed [%s] for %s seconds. Reason: %s", getName(src, false, true), getName(target, true, true), time, reason), "jail", 16711680)
+
+    TriggerClientEvent('ox_lib:notify', src, {
+        title = 'Player Jailed',
+        description = getName(target) .. ' has been jailed for ' .. time .. ' seconds. Reason: ' .. reason,
+        type = 'success'
+    })
+end)
+
+-- UNJAIL
+RegisterNetEvent('ea:target:unjail')
+AddEventHandler('ea:target:unjail', function(target)
+    local src = source
+
+    if not DoesPlayerHavePermission(src, "player.unjail") then
+        return
+    end
+
+    if not CachedPlayers[target] then
+        TriggerClientEvent('ox_lib:notify', src, {
+            title = 'Action Failed',
+            description = 'Player not found.',
+            type = 'error'
+        })
+        return
+    end
+
+    TriggerEvent("Liam:UnjailPlayerServer", target)
+
+    if GetConvar("ea_enableActionHistory", "true") == "true" then
+        Storage.addAction("~g~UNJAILED~w~~s~", CachedPlayers[target].discord, "Released from jail", getName(src), CachedPlayers[src].discord)
+    end
+
+    SendWebhookMessage(moderationNotification, string.format("[%s] unjailed [%s]", getName(src, false, true), getName(target, true, true)), "jail", 16777214)
+
+    TriggerClientEvent('ox_lib:notify', src, {
+        title = 'Player Unjailed',
+        description = getName(target) .. ' has been released from jail.',
+        type = 'success'
+    })
+end)
+
+-- FREEZE
+RegisterNetEvent('ea:target:freeze')
+AddEventHandler('ea:target:freeze', function(target)
+    local src = source
+
+    if not DoesPlayerHavePermission(src, "player.freeze") then
+        return
+    end
+
+    if not CachedPlayers[target] or CachedPlayers[target].immune then
+        TriggerClientEvent('ox_lib:notify', src, {
+            title = 'Action Failed',
+            description = 'Player is immune or not found.',
+            type = 'error'
+        })
+        return
+    end
+
+    freezePlayer(target, true)
+
+    SendWebhookMessage(moderationNotification, string.format(GetLocalisedText("adminfrozeplayer"), getName(src, false, true), getName(target, true, true)), "freeze", 16777214)
+
+    TriggerClientEvent('ox_lib:notify', src, {
+        title = 'Player Frozen',
+        description = getName(target) .. ' has been frozen.',
+        type = 'success'
+    })
+end)
+
+-- UNFREEZE
+RegisterNetEvent('ea:target:unfreeze')
+AddEventHandler('ea:target:unfreeze', function(target)
+    local src = source
+
+    if not DoesPlayerHavePermission(src, "player.freeze") then
+        return
+    end
+
+    if not CachedPlayers[target] or CachedPlayers[target].immune then
+        TriggerClientEvent('ox_lib:notify', src, {
+            title = 'Action Failed',
+            description = 'Player is immune or not found.',
+            type = 'error'
+        })
+        return
+    end
+
+    freezePlayer(target, false)
+
+    SendWebhookMessage(moderationNotification, string.format(GetLocalisedText("adminunfrozeplayer"), getName(src, false, true), getName(target, true, true)), "freeze", 16777214)
+
+    TriggerClientEvent('ox_lib:notify', src, {
+        title = 'Player Unfrozen',
+        description = getName(target) .. ' has been unfrozen.',
+        type = 'success'
+    })
+end)
+
+-- REMOVE WEAPONS
+RegisterNetEvent('ea:target:removeweapons')
+AddEventHandler('ea:target:removeweapons', function(target)
+    local src = source
+
+    if not CachedPlayers[target] then
+        TriggerClientEvent('ox_lib:notify', src, {
+            title = 'Action Failed',
+            description = 'Player not found.',
+            type = 'error'
+        })
+        return
+    end
+
+    TriggerEvent("EasyAdmin:RemoveAllWeapons", target)
+
+    SendWebhookMessage(moderationNotification, string.format("[%s] removed all weapons from [%s]", getName(src, false, true), getName(target, true, true)), "slap", 16777214)
+
+    TriggerClientEvent('ox_lib:notify', src, {
+        title = 'Weapons Removed',
+        description = 'All weapons have been removed from ' .. getName(target) .. '.',
+        type = 'success'
+    })
+end)
+
+-- REVIVE
+RegisterNetEvent('ea:target:revive')
+AddEventHandler('ea:target:revive', function(target)
+    local src = source
+
+    if not DoesPlayerHavePermission(src, "player.adrev") then
+        return
+    end
+
+    if not CachedPlayers[target] then
+        TriggerClientEvent('ox_lib:notify', src, {
+            title = 'Action Failed',
+            description = 'Player not found.',
+            type = 'error'
+        })
+        return
+    end
+
+    TriggerClientEvent('DeathScript:Admin:Revive', target, src, false)
+
+    TriggerClientEvent('ox_lib:notify', src, {
+        title = 'Player Revived',
+        description = getName(target) .. ' has been revived.',
+        type = 'success'
+    })
+end)
+
+-- RESPAWN
+RegisterNetEvent('ea:target:respawn')
+AddEventHandler('ea:target:respawn', function(target)
+    local src = source
+
+    if not DoesPlayerHavePermission(src, "player.adres") then
+        return
+    end
+
+    if not CachedPlayers[target] then
+        TriggerClientEvent('ox_lib:notify', src, {
+            title = 'Action Failed',
+            description = 'Player not found.',
+            type = 'error'
+        })
+        return
+    end
+
+    TriggerClientEvent('DeathScript:Admin:Respawn', target, src, false)
+
+    TriggerClientEvent('ox_lib:notify', src, {
+        title = 'Player Respawned',
+        description = getName(target) .. ' has been respawned.',
+        type = 'success'
+    })
+end)
