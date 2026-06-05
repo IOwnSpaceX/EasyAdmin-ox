@@ -1278,7 +1278,7 @@ function GenerateMenu()
 					for i, cachedplayer in pairs(cachedplayers) do
 						if cachedplayer.droppedTime and not cachedplayer.immune then
 							local thisCachedPlayerMenu = _menuPool:AddSubMenu(CachedList,
-								"[" .. cachedplayer.id .. "] " .. cachedplayer.name, "", true)
+								"[" .. cachedplayer.id .. "] " .. cachedplayer.name .. " " .. (cachedplayer.dropStatus or "~o~DISCONNECTED"), "", true)
 							cachedMenus[tostring(cachedplayer.id)] = {
 								menu = thisCachedPlayerMenu,
 								name = cachedplayer
@@ -1286,6 +1286,13 @@ function GenerateMenu()
 								id = cachedplayer.id
 							}
 							thisCachedPlayerMenu:SetMenuWidthOffset(menuWidth)
+
+							local dropReasonItem = NativeUI.CreateItem(
+								"~m~Drop Reason",
+								cachedplayer.dropReason or "Unknown"
+							)
+
+							thisCachedPlayerMenu:AddItem(dropReasonItem)
 
 							thisCachedPlayerMenu.ParentItem.Activated = function(ParentMenu, SelectedItem)
 								thisPlayer = thisCachedPlayerMenu
