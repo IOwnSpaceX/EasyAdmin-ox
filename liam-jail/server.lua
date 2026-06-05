@@ -64,7 +64,7 @@ end)
 
 -- Original Jail event handler with persistence
 RegisterNetEvent("Liam:JailPlayerServer")
-AddEventHandler("Liam:JailPlayerServer", function(targetId, jailtime, jailReason)
+AddEventHandler("Liam:JailPlayerServer", function(targetId, jailtime, jailReason, moderatorSrc)
     local targetPlayer = tonumber(targetId)
     if targetPlayer and GetPlayerName(targetPlayer) then
         local identifier = GetFivemIdentifier(targetPlayer)
@@ -89,14 +89,17 @@ AddEventHandler("Liam:JailPlayerServer", function(targetId, jailtime, jailReason
 
         if discordId then
             local reason = string.format("%s. \nTime: %s seconds.", jailReason or "No reason provided", jailtime)
-            local moderatorName = GetPlayerName(source)
+            local modSrc = moderatorSrc or source
+            local moderatorName = (modSrc and modSrc ~= 0) and GetPlayerName(modSrc) or "Server"
             local moderatorDiscordId = nil
 
-            local moderatorIdentifiers = GetPlayerIdentifiers(source)
-            for _, identifier in ipairs(moderatorIdentifiers) do
-                if string.find(identifier, "discord:") then
-                    moderatorDiscordId = string.sub(identifier, 9)
-                    break
+            if modSrc and modSrc ~= 0 then
+                local moderatorIdentifiers = GetPlayerIdentifiers(modSrc)
+                for _, id in ipairs(moderatorIdentifiers) do
+                    if string.find(id, "discord:") then
+                        moderatorDiscordId = string.sub(id, 9)
+                        break
+                    end
                 end
             end
             
