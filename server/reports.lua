@@ -40,9 +40,17 @@ Citizen.CreateThread(function()
                 
                 local reason = string.gsub(rawCommand, GetConvar("ea_callAdminCommandName", "calladmin").." ", "")
                 local reportid = addNewReport(0, source, _,reason)
-                for i,_ in pairs(OnlineAdmins) do 
-                    local notificationText = string.format(string.gsub(GetLocalisedText("playercalledforadmin"), "```", ""), getName(source,true,false), reason, reportid)
-                    TriggerClientEvent("EasyAdmin:showNotification", i, notificationText)
+                for i,_ in pairs(OnlineAdmins) do
+                    if Player(i).state['easyadmin-ox:clockedIn'] == 'yes' then
+                        local notificationText = string.format(
+                            string.gsub(GetLocalisedText("playercalledforadmin"), "```", ""),
+                            getName(source,true,false),
+                            reason,
+                            reportid
+                        )
+
+                        TriggerClientEvent("EasyAdmin:showNotification", i, notificationText)
+                    end
                 end
                 
                 
@@ -135,20 +143,38 @@ Citizen.CreateThread(function()
 
 
 	function addNewReport(type, reporter, reported, reason)
-		local t = nil
-		if type == 1 then
-			t = {type=type, reporter=reporter, reporterName=getName(reporter, true), reported=reported, reportedName=getName(reported, true),reason=reason}
-		else
-			t = {type=type, reporter=reporter, reporterName=getName(reporter, true), reason=reason}
-		end
-		t.id = #reports+1
-		reports[t.id] = t
-		for i,_ in pairs(OnlineAdmins) do 
-			TriggerLatentClientEvent("EasyAdmin:NewReport", i, 10000, t)
-		end
+        local t = nil
+
+        if type == 1 then
+            t = {
+                type = type,
+                reporter = reporter,
+                reporterName = getName(reporter, true),
+                reported = reported,
+                reportedName = getName(reported, true),
+                reason = reason
+            }
+        else
+            t = {
+                type = type,
+                reporter = reporter,
+                reporterName = getName(reporter, true),
+                reason = reason
+            }
+        end
+
+        t.id = #reports + 1
+        reports[t.id] = t
+
+        for i, _ in pairs(OnlineAdmins) do
+            if Player(i).state['easyadmin-ox:clockedIn'] == 'yes' then
+                TriggerLatentClientEvent("EasyAdmin:NewReport", i, 10000, t)
+            end
+        end
+
         TriggerEvent("EasyAdmin:reportAdded", t)
-		return t.id
-	end
+        return t.id
+    end
 	
 	RegisterServerEvent("EasyAdmin:ClaimReport", function(reportId)
 		if DoesPlayerHavePermission(source, "player.reports.claim") then
