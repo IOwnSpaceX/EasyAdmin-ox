@@ -6,7 +6,7 @@ module.exports = {
 		.setDescription('Unbans a player by ban ID')
 		.addStringOption(option =>
 			option.setName('banid')
-				.setDescription('Ban ID (supports alphanumeric IDs)')
+				.setDescription('Ban ID')
 				.setRequired(true)),
 	async execute(interaction, exports) {
 		const banIdRaw = interaction.options.getString('banid').trim()
