@@ -41,7 +41,7 @@ module.exports = {
 			? (user.identifiers.find(i => i.startsWith('discord:')) || '').replace('discord:', '')
 			: ''
 		if (discordId) {
-			exports[EasyAdmin].addActionHistory('~y~JAILED~w~~s~', discordId, `${reason}. Time: ${duration} seconds.`, interaction.user.tag, `discord:${interaction.user.id}`)
+			exports[EasyAdmin].addActionHistory('~y~JAILED~w~~s~', discordId, `${reason}\nTime: ${duration} seconds.`, `${interaction.user.tag} (Discord)`, `discord:${interaction.user.id}`)
 		}
 
 		// Log to jail log channel
