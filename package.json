@@ -1,0 +1,10 @@
+{
+	"name": "easyadmin-ox",
+	"version": "1.0.0",
+	"dependencies": {
+		"discord.js": "13.x",
+		"@discordjs/builders": "0.16.0",
+		"@discordjs/rest": "0.6.0",
+		"discord-api-types": "0.37.0"
+	}
+}
