@@ -51,12 +51,17 @@ async function prepareGenericEmbed(message,feature,colour,title,image,customAuth
 		return
 	}
 	const embed = new EmbedBuilder()
-		.setColor(colour || 16777214)
+		.setColor(colour || 0x5865F2)
 	if (timestamp != false) {
 		embed.setTimestamp()
 	}
 	if (message) {
-		embed.addFields([{name: `**${(title || 'EasyAdmin')}**`, value: message}])
+		embed.setDescription(message)
+	}
+	if (title) {
+		embed.setTitle(title)
+	} else if (message && !description) {
+		// no-op: message goes to description now
 	}
 	if (description) {
 		embed.setDescription(description)
@@ -67,6 +72,7 @@ async function prepareGenericEmbed(message,feature,colour,title,image,customAuth
 	if (image) {
 		embed.setImage(image)
 	}
+	embed.setFooter({ text: 'EasyAdmin' })
 	return embed
 }
 
@@ -179,7 +185,14 @@ async function LogDiscordMessage(text, feature, colour) {
 	if (GetConvar('ea_botLogChannel', '') == '') {return}
 	if (feature == 'report' || feature == 'calladmin') {return}
 	const embed = await prepareGenericEmbed(text,undefined,colour)
-	var channel = await client.channels.cache.get(botLogForwards[feature] || GetConvar('ea_botLogChannel', ''))
+	// Jail actions get their own dedicated channel if set
+	var channelId
+	if ((feature == 'jail') && GetConvar('ea_jailLogChannel', '') != '') {
+		channelId = GetConvar('ea_jailLogChannel', '')
+	} else {
+		channelId = botLogForwards[feature] || GetConvar('ea_botLogChannel', '')
+	}
+	var channel = await client.channels.cache.get(channelId)
 	if (channel) {
 		channel.send({ embeds: [embed] }).catch((error) => {
 			console.error('^7Failed to log message, please make sure you gave the bot permission to write in the log channel!\n\n')
