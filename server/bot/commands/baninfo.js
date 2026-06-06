@@ -6,7 +6,7 @@ module.exports = {
 		.setDescription('Shows details of a ban')
 		.addStringOption(option =>
 			option.setName('banid')
-				.setDescription('Ban ID (supports alphanumeric IDs)')
+				.setDescription('Ban ID')
 				.setRequired(true)),
 	async execute(interaction, exports) {
 		const banIdRaw = interaction.options.getString('banid').trim()
