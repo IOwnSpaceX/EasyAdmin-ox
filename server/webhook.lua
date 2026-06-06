@@ -38,6 +38,10 @@ function SendWebhookMessage(webhook,message,feature,colour,title,image)
     reportNotification = GetConvar("ea_reportNotification", "false")
     detailNotification = GetConvar("ea_detailNotification", "false")
     
+    if feature == "jail" and GetConvar("ea_jailLogChannel", "false") ~= "false" then
+        webhook = GetConvar("ea_jailLogChannel", "false")
+    end
+
     local embed = {
         {
             ["color"] = (colour or 16777214),
