@@ -1,0 +1,85 @@
+
+
+
+function parseDuration(str) {
+	const units = { second: 1, minute: 60, hour: 3600, day: 86400, week: 604800, month: 2592000, year: 31536000 }
+	const aliases = { s: 'second', sec: 'second', seconds: 'second', m: 'minute', min: 'minute', mins: 'minute', minutes: 'minute', h: 'hour', hr: 'hour', hrs: 'hour', hours: 'hour', d: 'day', days: 'day', w: 'week', weeks: 'week', mo: 'month', months: 'month', y: 'year', years: 'year' }
+	const regex = /(\d+(?:\.\d+)?)\s*([a-z]+)/gi
+	let total = 0
+	let matched = false
+	let match
+	while ((match = regex.exec(str)) !== null) {
+		const val = parseFloat(match[1])
+		const unit = aliases[match[2].toLowerCase()]
+		if (!unit) throw new Error(`Unknown unit: ${match[2]}`)
+		total += val * units[unit]
+		matched = true
+	}
+	if (!matched) throw new Error('No duration found')
+	return total
+}
+
+module.exports = {
+	data: new SlashCommandBuilder()
+		.setName('ban')
+		.setDescription('bans a User')
+		.addStringOption(option =>
+			option.setName('user')
+				.setDescription('Username or ID')
+				.setRequired(true))
+		.addStringOption(option =>
+			option.setName('reason')
+				.setDescription('Reason Text')
+				.setRequired(true))
+		.addStringOption(option =>
+			option.setName('timeframe')
+				.setDescription('The timeframe in a human readable format (30 mins, 1 hour, 2 weeks, or permanent)')
+				.setRequired(true)),
+	async execute(interaction, exports) {
+		const userOrId = interaction.options.getString('user')
+		const reason = exports[EasyAdmin].formatShortcuts(interaction.options.getString('reason'))
+		const timeframe = exports[EasyAdmin].formatShortcuts(interaction.options.getString('timeframe'))
+
+		const user = await findPlayerFromUserInput(userOrId)
+
+		if (!user || user.dropped) {
+			interaction.reply({ content: 'Sorry, i couldn\'t find any user with the infos you provided.', ephemeral: true})
+			return
+		}
+
+		var banTime
+
+		try {
+			if (timeframe.toLowerCase() == 'permanent') {
+				banTime = 10444633200
+			} else {
+				banTime = await parseDuration(timeframe)
+				if (banTime > 10444633200) {
+					banTime = 10444633200
+				}
+			}
+		} catch (error) {
+			console.error(error)
+			interaction.reply({ content: 'Sorry, i couldn\'t understand the timeframe you provided.', ephemeral: true })
+			return
+		}
+
+
+		if (banTime < 10444633200 && !await DoesGuildMemberHavePermission(interaction.member, 'player.ban.temporary')) {
+			interaction.reply({ content: 'Insufficient Permissions, you need `easyadmin.player.ban.temporary`.', ephemeral: true })
+			return
+		} else if (banTime > 10444633200 && !await DoesGuildMemberHavePermission(interaction.member, 'player.ban.permanent')) {
+			interaction.reply({ content: 'Insufficient Permissions, you need `easyadmin.player.ban.permanent`.', ephemeral: true })
+			return
+		}
+
+		var ban = exports[EasyAdmin].addBan(user.id, reason, banTime, interaction.user.tag)
+		if (ban) {
+			let embed = await prepareGenericEmbed(`Successfully banned **${user.name}** for **${reason}** until ${ban.expireString} [#${ban.banid}.`)
+			await interaction.reply({ embeds: [embed]})
+		} else {
+			let embed = await prepareGenericEmbed(`Failed banning **${user.name}**.`)
+			await interaction.reply({ embeds: [embed]})
+		}
+	},
+}
