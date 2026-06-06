@@ -24,6 +24,7 @@ shared_scripts {
 
 server_scripts {
     "server/*.lua",
+    "server/bot/bot.js",
     "plugins/**/*_shared.lua",
     "plugins/**/*_server.lua",
     "clockin/__server.lua",
