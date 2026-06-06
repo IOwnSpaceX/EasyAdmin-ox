@@ -879,6 +879,14 @@ Citizen.CreateThread(function()
 		end
 	end
 	exports('getPlayerWarnings', getPlayerWarnings)
+
+	local function addActionHistory(actionType, discordId, reason, moderatorName, moderatorId)
+		if GetConvar("ea_enableActionHistory", "true") == "true" then
+			if not discordId or discordId == '' then return end
+			Storage.addAction(actionType, discordId, reason, moderatorName, moderatorId)
+		end
+	end
+	exports('addActionHistory', addActionHistory)
 	
 	AddEventHandler("EasyAdmin:GetVersion", function(cb)
 		cb(GetVersion())
