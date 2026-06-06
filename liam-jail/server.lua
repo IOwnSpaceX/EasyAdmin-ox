@@ -87,23 +87,18 @@ AddEventHandler("Liam:JailPlayerServer", function(targetId, jailtime, jailReason
             end
         end
 
-        if discordId then
-            local reason = string.format("%s. \nTime: %s seconds.", jailReason or "No reason provided", jailtime)
-            local modSrc = moderatorSrc or source
-            local moderatorName = (modSrc and modSrc ~= 0) and GetPlayerName(modSrc) or "Server"
+        if discordId and (moderatorSrc and moderatorSrc ~= 0) then
+            local modName = GetPlayerName(moderatorSrc)
             local moderatorDiscordId = nil
-
-            if modSrc and modSrc ~= 0 then
-                local moderatorIdentifiers = GetPlayerIdentifiers(modSrc)
-                for _, id in ipairs(moderatorIdentifiers) do
-                    if string.find(id, "discord:") then
-                        moderatorDiscordId = string.sub(id, 9)
-                        break
-                    end
+            local moderatorIdentifiers = GetPlayerIdentifiers(moderatorSrc)
+            for _, id in ipairs(moderatorIdentifiers) do
+                if string.find(id, "discord:") then
+                    moderatorDiscordId = string.sub(id, 9)
+                    break
                 end
             end
-            
-            Storage.addAction("~y~JAILED~w~~s~", discordId, reason, moderatorName, moderatorDiscordId)
+            local formattedReason = string.format("%s\nTime: %s seconds.", jailReason or "No reason provided", jailtime)
+            Storage.addAction("~y~JAILED~w~~s~", discordId, formattedReason, modName, moderatorDiscordId)
         end
         TriggerClientEvent("Liam:JailPlayer", targetPlayer, jailtime, jailReason)
     end
