@@ -93,14 +93,20 @@ module.exports = {
 				const moderator = entry.moderator || 'Unknown'
 				const reason = entry.reason || 'No reason provided'
 				const entryId = entry.id || '?'
-
+				const banId = entry.banId && entry.banId !== '' ? entry.banId : null
+				const expireString = entry.expireString && entry.expireString !== '' ? entry.expireString : null
+	
+				const actionLabel = banId ? `${actionType} \`${banId}\`` : actionType
 				let fieldValue = `**Moderator:** ${moderator}\n**Reason:** ${reason}`
+				if (expireString) {
+					fieldValue += `\n**Expires:** ${expireString}`
+				}
 				if (canDelete) {
 					fieldValue += `\n*Remove: \`/punishmenthistory discordid:${discordId} removeid:${entryId}\`*`
 				}
-
+	
 				embed.addFields([{
-					name: `[#${entryId}] ${actionType}`,
+					name: `[#${entryId}] ${actionLabel}`,
 					value: fieldValue,
 					inline: false
 				}])
