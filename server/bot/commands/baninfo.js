@@ -24,7 +24,7 @@ module.exports = {
 				}
 			}
 
-			const expireDisplay = ban.expireString || 'Permanent'
+			const expireDisplay = (ban.expire >= 10444633200) ? 'Permanent Ban' : (ban.expireString || 'Unknown')
 			const bannedAt = ban.time ? `<t:${ban.time}:F>` : 'Unknown'
 
 			let embed = new EmbedBuilder()
