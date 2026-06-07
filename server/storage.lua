@@ -146,8 +146,8 @@ Storage = {
             reason = reason,
             moderator = moderator_name,
             moderatorId = moderator_identifier,
-            banId = banId or nil,
-            expireString = expireString or nil,
+            banId = banId or "",
+            expireString = expireString or "",
         })
         local content = LoadResourceFile(GetCurrentResourceName(), "actions.json")
         if not content then
