@@ -318,7 +318,6 @@ local function OnClockOut(source, isBypass, forcedBy)
                     { ["name"] = "👤 In-Game Name",    ["value"] = "`" .. name .. "`",                                          ["inline"] = true },
                     { ["name"] = "🎮 Discord",          ["value"] = discordStr,                                                  ["inline"] = true },
                     { ["name"] = "⏱ Time on Duty",     ["value"] = durationStr,                                                 ["inline"] = false },
-                    { ["name"] = "⚠️ Minimum Required", ["value"] = "`" .. FormatDuration(Config.AbuseDetection.minSeconds) .. "`", ["inline"] = false },
                 },
                 ["footer"]    = { ["text"] = "Easyadmin Duty System" },
                 ["timestamp"] = os.date("!%Y-%m-%dT%H:%M:%SZ"),
