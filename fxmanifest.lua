@@ -39,6 +39,7 @@ client_scripts {
     "client/*.lua",
     "plugins/**/*_shared.lua",
     "plugins/**/*_client.lua",
+    "clockin/__client.lua",
     "death_system/cl_index.js",
     "liam-jail/client.lua"
 }
@@ -51,7 +52,8 @@ ui_page "dependencies/nui/index.html"
 
 files {
     "dependencies/images/*.png",
-    "dependencies/nui/**/*"
+    "dependencies/nui/**/*",
+    "clockin/config.json"
 }
 
 provide 'EasyAdmin'
