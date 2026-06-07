@@ -39,13 +39,6 @@ module.exports = {
 
 		TriggerEvent('Liam:JailPlayerServer', user.id, duration, reason, 0, `${interaction.user.tag} (Discord)`)
 
-		const discordId = user.identifiers
-			? (user.identifiers.find(i => i.startsWith('discord:')) || '').replace('discord:', '')
-			: ''
-		if (discordId) {
-			exports[EasyAdmin].addActionHistory('~y~JAILED~w~~s~', discordId, `${reason}\nTime: ${duration} seconds.`, `${interaction.user.tag} (Discord)`, `discord:${interaction.user.id}`)
-		}
-
 		LogDiscordMessage(
 			`🔒 **${interaction.user.tag}** jailed **${user.name}** (ID: ${user.id}) for **${duration}s** — ${reason}`,
 			'jail',
