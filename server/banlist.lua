@@ -208,6 +208,14 @@ function fetchBan(banId)
 end
 exports('fetchBan', fetchBan)
 
+local function getLastBan()
+    if #blacklist > 0 then
+        return blacklist[#blacklist]
+    end
+    return nil
+end
+exports('getLastBan', getLastBan)
+
 RegisterServerEvent("EasyAdmin:unbanPlayer", function(banId)
     if DoesPlayerHavePermission(source, "player.ban.remove") and CheckAdminCooldown(source, "unban") then
         SetAdminCooldown(source, "unban")
