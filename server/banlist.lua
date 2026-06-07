@@ -35,6 +35,7 @@ RegisterServerEvent("EasyAdmin:banPlayer", function(playerId,reason,expires)
             reason = formatShortcuts(reason).. string.format(GetLocalisedText("reasonadd"), CachedPlayers[playerId].name, getName(source) )
             local ban = {banid = GetFreshBanId(), name = username,identifiers = bannedIdentifiers, banner = getName(source, true), reason = reason, expire = expires, expireString = formatDateString(expires), time = os.time() }
             updateBlacklist( ban )
+			TriggerEvent("EasyAdmin:LogAction", {action = "BAN", discord = CachedPlayers[playerId].discord, reason = reason, moderator = getName(source, true), moderatorId = CachedPlayers[source] and CachedPlayers[source].discord or "Unknown"})
             PrintDebugMessage("Player "..getName(source,true).." banned player "..CachedPlayers[playerId].name.." for "..reason, 3)
             SendWebhookMessage(moderationNotification,string.format(GetLocalisedText("adminbannedplayer"), getName(source, false, true), CachedPlayers[playerId].name, reason, formatDateString( expires ), tostring(ban.banid) ), "ban", 16711680)
             DropPlayer(playerId, string.format(GetLocalisedText("banned"), reason, formatDateString( expires ) ) )
@@ -67,6 +68,7 @@ RegisterServerEvent("EasyAdmin:offlinebanPlayer", function(playerId,reason,expir
             reason = formatShortcuts(reason).. string.format(GetLocalisedText("reasonadd"), CachedPlayers[playerId].name, getName(source) )
             local ban = {banid = GetFreshBanId(), name = username,identifiers = bannedIdentifiers, banner = getName(source), reason = reason, expire = expires, expireString = formatDateString(expires), time = os.time() }
             updateBlacklist( ban )
+			TriggerEvent("EasyAdmin:LogAction", {action = "BAN", discord = CachedPlayers[playerId].discord, reason = reason, moderator = getName(source, true), moderatorId = CachedPlayers[source] and CachedPlayers[source].discord or "Unknown"})
             PrintDebugMessage("Player "..getName(source,true).." offline banned player "..CachedPlayers[playerId].name.." for "..reason, 3)
             SendWebhookMessage(moderationNotification,string.format(GetLocalisedText("adminofflinebannedplayer"), getName(source, false, true), CachedPlayers[playerId].name, reason, formatDateString( expires ) ), "ban", 16711680)
         end
@@ -114,6 +116,7 @@ function addBanExport(playerId,reason,expires,banner)
     reason = formatShortcuts(reason).. string.format(GetLocalisedText("reasonadd"), getName(tostring(playerId) or "?"), banner or "Unknown" )
     local ban = {banid = GetFreshBanId(), name = bannedUsername,identifiers = bannedIdentifiers,  banner = banner or "Unknown", reason = reason, expire = expires, expireString = formatDateString(expires), time = os.time() }
     updateBlacklist( ban )
+	TriggerEvent("EasyAdmin:LogAction", {action = "BAN", discord = CachedPlayers[playerId] and CachedPlayers[playerId].discord or nil, reason = reason, moderator = banner or "Unknown", moderatorId = "Unknown"})
     
     if source then
         PrintDebugMessage("Player "..getName(source,true).." added ban "..reason, 3)
