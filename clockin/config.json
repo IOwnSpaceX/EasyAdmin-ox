@@ -1,0 +1,15 @@
+{
+    "cycle": {
+        "startDate": "2026-05-25",
+        "lengthDays": 14,
+        "label": "2-week cycle"
+    },
+    "hourRequirement": 14400,
+    "ranks": [
+        { "roleId": "ROLE_ID_HERE", "label": "Junior Admin",  "required": 14400 },
+        { "roleId": "ROLE_ID_HERE", "label": "Admin",         "required": 18000 },
+        { "roleId": "ROLE_ID_HERE", "label": "Senior Admin",  "required": 21600 },
+        { "roleId": "ROLE_ID_HERE", "label": "Head Admin",    "required": 25200 }
+    ],
+    "guildId": "YOUR_GUILD_ID_HERE"
+}
