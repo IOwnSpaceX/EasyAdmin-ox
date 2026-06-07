@@ -137,7 +137,7 @@ Storage = {
         end
         return userActions
     end,
-    addAction = function(type, identifier, reason, moderator_name, moderator_identifier, banId, expireString)
+    addAction = function(type, identifier, reason, moderator_name, moderator_identifier, banId, expireString, expire)
         table.insert(actions, {
             time = os.time(),
             id = #actions + 1,
@@ -148,6 +148,7 @@ Storage = {
             moderatorId = moderator_identifier,
             banId = banId or "",
             expireString = expireString or "",
+            expire = expire or nil,
         })
         local content = LoadResourceFile(GetCurrentResourceName(), "actions.json")
         if not content then
