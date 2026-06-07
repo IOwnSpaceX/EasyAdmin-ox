@@ -19,7 +19,7 @@ minimumMatchingIdentifierCount = GetConvarInt("ea_minIdentifierMatches", 2)
 
 RegisterNetEvent("EasyAdmin:GetActionHistory", function(discordId)
     if DoesPlayerHavePermission(source, "player.actionhistory.view") then
-        if not discordId then
+        if discordId == nil then
             PrintDebugMessage("No Discord ID provided, returning empty action history.", 2)
             TriggerClientEvent("EasyAdmin:ReceiveActionHistory", source, {})
             return
