@@ -229,10 +229,12 @@ end
 exports('GetLocalisedText', GetLocalisedText)
 
 function formatDateString(string)
+	if string >= 10444633200 then
+		return "Permanent Ban"
+	end
 	local dateFormat = GetConvar("ea_dateFormat", '%d/%m/%Y 	%H:%M:%S')
 	return os.date(dateFormat, string)
 end
-exports('formatDateString', formatDateString)
 
 function formatShortcuts(thisstring)
 	if not thisstring then return thisstring end
