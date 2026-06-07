@@ -598,6 +598,16 @@ function GenerateMenu()
 								    "[#" .. (action.id or "?") .. "] " .. (action.action or "Unknown") .. " by " .. (action.moderator or "Unknown"),
 								    GetLocalisedText("reason") .. ": " .. (action.reason or "No reason provided") .. (action.banId and ("\nBan ID: " .. tostring(action.banId)) or "") .. (action.expireString and ("\nBan Length: " .. action.expireString) or ""), true)
 								actionSubmenu:SetMenuWidthOffset(menuWidth)
+								if action.banId and action.banId ~= "" then
+									local banIdItem = NativeUI.CreateItem("Ban ID: " .. tostring(action.banId), "")
+									banIdItem.Activated = function(ParentMenu, SelectedItem) end
+									actionSubmenu:AddItem(banIdItem)
+								end
+								if action.expireString and action.expireString ~= "" then
+									local banLengthItem = NativeUI.CreateItem("Ban Length: " .. action.expireString, "")
+									banLengthItem.Activated = function(ParentMenu, SelectedItem) end
+									actionSubmenu:AddItem(banLengthItem)
+								end
 								if action.action == "BAN" and permissions["player.ban.remove"] then
 									local actionUnban = NativeUI.CreateItem(GetLocalisedText("unbanplayer"),
 										GetLocalisedText("unbanplayerguide"))
