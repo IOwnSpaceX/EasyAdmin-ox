@@ -3,7 +3,7 @@
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('respawn')
-		.setDescription('Respawns a player at their last checkpoint')
+		.setDescription('Respawns a player')
 		.addStringOption(option =>
 			option.setName('user')
 				.setDescription('Username or Server ID')
