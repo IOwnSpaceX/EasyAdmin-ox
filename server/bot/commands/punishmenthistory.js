@@ -94,7 +94,25 @@ module.exports = {
 				const reason = entry.reason || 'No reason provided'
 				const entryId = entry.id || '?'
 				const banId = entry.banId && entry.banId !== '' ? entry.banId : null
-				const expireString = entry.expireString && entry.expireString !== '' ? entry.expireString : null
+				const expireString = (() => {
+				    if (!entry.banId || !entry.expireString) return null
+				    if (!entry.expire || entry.expire >= 10444633200) return entry.expireString || null
+				    const months = ['January','February','March','April','May','June','July','August','September','October','November','December']
+				    const diff = entry.expire - Math.floor(Date.now() / 1000)
+				    if (diff <= 0) return 'Expired'
+				    const years   = Math.floor(diff / 31536000)
+				    const days    = Math.floor((diff % 31536000) / 86400)
+				    const hours   = Math.floor((diff % 86400) / 3600)
+				    const minutes = Math.floor((diff % 3600) / 60)
+				    const parts = []
+				    if (years)   parts.push(years   + 'y')
+				    if (days)    parts.push(days    + 'd')
+				    if (hours)   parts.push(hours   + 'h')
+				    if (minutes) parts.push(minutes + 'm')
+				    if (!parts.length) parts.push('< 1m')
+				    const d = new Date(entry.expire * 1000)
+				    return parts.join(' ') + ' (' + d.getDate() + ', ' + months[d.getMonth()] + ', ' + d.getFullYear() + ')'
+				})()
 	
 				const actionLabel = banId ? `${actionType} \`${banId}\`` : actionType
 				let fieldValue = `**Moderator:** ${moderator}\n**Reason:** ${reason}`
