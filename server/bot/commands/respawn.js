@@ -23,14 +23,6 @@ module.exports = {
 
 		TriggerClientEvent('DeathScript:Admin:Respawn', user.id, 0, false)
 
-		// Log to action history
-		const discordId = user.identifiers
-			? (user.identifiers.find(i => i.startsWith('discord:')) || '').replace('discord:', '')
-			: ''
-		if (discordId) {
-			exports[EasyAdmin].addActionHistory('~b~RESPAWNED~w~~s~', discordId, 'Respawned via Discord', interaction.user.tag, `discord:${interaction.user.id}`)
-		}
-
 		LogDiscordMessage(
 			`🔄 **${interaction.user.tag}** respawned **${user.name}** (ID: ${user.id})`,
 			'respawn',
