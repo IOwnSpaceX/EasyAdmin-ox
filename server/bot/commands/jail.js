@@ -37,7 +37,7 @@ module.exports = {
 			return interaction.reply({ embeds: [embed], ephemeral: true })
 		}
 
-		TriggerEvent('Liam:JailPlayerServer', user.id, duration, reason, 0)
+		TriggerEvent('Liam:JailPlayerServer', user.id, duration, reason, 0, `${interaction.user.tag} (Discord)`)
 
 		const discordId = user.identifiers
 			? (user.identifiers.find(i => i.startsWith('discord:')) || '').replace('discord:', '')
