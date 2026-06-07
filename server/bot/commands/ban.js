@@ -77,7 +77,9 @@ module.exports = {
 
 		var ban = exports[EasyAdmin].addBan(user.id, reason, banTime, interaction.user.tag)
 		if (ban) {
+			ban = exports[EasyAdmin].getLastBan()
 			const isPermanent = banTime >= 10444633200
+			const expireDisplay = isPermanent ? 'Permanent Ban' : (ban && ban.expireString ? ban.expireString : 'Unknown')
 			let embed = new EmbedBuilder()
 				.setColor(0xE74C3C)
 				.setTitle('🔨 Player Banned')
@@ -87,7 +89,7 @@ module.exports = {
 					{ name: '📋 Reason', value: `> ${reason}`, inline: false },
 					{ name: '⏳ Duration', value: isPermanent ? '`Permanent`' : `\`${timeframe}\``, inline: true },
 					{ name: '🗓️ Expires', value: `\`${ban.expireString}\``, inline: true },
-					{ name: '🆔 Ban ID', value: `\`#${ban.banid}\``, inline: true },
+					{ name: '🆔 Ban ID', value: ban && ban.banid ? `\`#${ban.banid}\`` : '`N/A`', inline: true },
 				])
 				.setTimestamp()
 				.setFooter({ text: `Issued via Discord • ${interaction.user.tag}` })
