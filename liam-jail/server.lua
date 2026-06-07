@@ -104,7 +104,7 @@ AddEventHandler("Liam:JailPlayerServer", function(targetId, jailtime, jailReason
             Storage.addAction("~y~JAILED~w~~s~", discordId, formattedReason, modName, moderatorDiscordId)
         end
         TriggerClientEvent("Liam:JailPlayer", targetPlayer, jailtime, jailReason)
-        exports['EasyAdmin-ox-main']:freezePlayer(targetPlayer, false)
+        exports['EasyAdmin-ox']:freezePlayer(targetPlayer, false)
     end
 end)
 
