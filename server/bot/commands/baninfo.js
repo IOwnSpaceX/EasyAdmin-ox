@@ -27,7 +27,24 @@ module.exports = {
 				}
 			}
 
-			const expireDisplay = (ban.expire >= 10444633200) ? 'Permanent Ban' : (ban.expireString || 'Unknown')
+			const expireDisplay = (() => {
+			    if (!ban.expire || ban.expire >= 10444633200) return 'Permanent Ban'
+			    const months = ['January','February','March','April','May','June','July','August','September','October','November','December']
+			    const diff = ban.expire - Math.floor(Date.now() / 1000)
+			    if (diff <= 0) return 'Expired'
+			    const years   = Math.floor(diff / 31536000)
+			    const days    = Math.floor((diff % 31536000) / 86400)
+			    const hours   = Math.floor((diff % 86400) / 3600)
+			    const minutes = Math.floor((diff % 3600) / 60)
+			    const parts = []
+			    if (years)   parts.push(years   + 'y')
+			    if (days)    parts.push(days    + 'd')
+			    if (hours)   parts.push(hours   + 'h')
+			    if (minutes) parts.push(minutes + 'm')
+			    if (!parts.length) parts.push('< 1m')
+			    const d = new Date(ban.expire * 1000)
+			    return parts.join(' ') + ' (' + d.getDate() + ', ' + months[d.getMonth()] + ', ' + d.getFullYear() + ')'
+			})()
 			const bannedAt = ban.time ? `<t:${ban.time}:F>` : 'Unknown'
 
 			let embed = new EmbedBuilder()
