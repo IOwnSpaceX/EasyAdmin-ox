@@ -126,13 +126,13 @@ module.exports = {
 		const prevButton = new ButtonBuilder()
 			.setCustomId(`ph_prev_${timestamp}`)
 			.setLabel('◀ Previous')
-			.setStyle(ButtonStyle.Secondary)
+			.setStyle(2)
 			.setDisabled(true)
 
 		const nextButton = new ButtonBuilder()
 			.setCustomId(`ph_next_${timestamp}`)
 			.setLabel('Next ▶')
-			.setStyle(ButtonStyle.Secondary)
+			.setStyle(2)
 			.setDisabled(pages.length <= 1)
 
 		const row = new ActionRowBuilder().addComponents(prevButton, nextButton)
