@@ -1,0 +1,56 @@
+==============================
+  EasyAdmin Discord Bot - ACE Permissions Table
+  Both ACEs required for each command
+        By: Liam (IOwnSpaceX)
+==============================
+
+COMMAND               ACE 1 (run command)                  +   ACE 2 (action permission)
+---------             ----------------------------             -----------------------------------
+/ban                  easyadmin.bot.ban                    +   easyadmin.player.ban.temporary
+                                                           +   easyadmin.player.ban.permanent
+/unban                easyadmin.bot.unban                  +   easyadmin.player.ban.remove
+/baninfo              easyadmin.bot.baninfo                +   easyadmin.player.ban.view
+/kick                 easyadmin.bot.kick                   +   easyadmin.player.kick
+/warn                 easyadmin.bot.warn                   +   easyadmin.player.warn
+/mute                 easyadmin.bot.mute                   +   easyadmin.player.mute
+/unmute               easyadmin.bot.unmute                 +   easyadmin.player.mute
+/freeze               easyadmin.bot.freeze                 +   easyadmin.player.freeze
+/unfreeze             easyadmin.bot.unfreeze               +   easyadmin.player.freeze
+/slap                 easyadmin.bot.slap                   +   easyadmin.player.slap
+/screenshot           easyadmin.bot.screenshot             +   easyadmin.player.screenshot
+/jail                 easyadmin.bot.jail                   +   easyadmin.player.jail
+/unjail               easyadmin.bot.unjail                 +   easyadmin.player.unjail
+/revive               easyadmin.bot.revive                 +   easyadmin.player.adrev
+/respawn              easyadmin.bot.respawn                +   easyadmin.player.adres
+/playerinfo           easyadmin.bot.playerinfo             +   easyadmin.player.info
+/playerlist           easyadmin.bot.playerlist                 (no second ACE needed)
+/announce             easyadmin.bot.announce               +   easyadmin.server.announce
+/cleanup              easyadmin.bot.cleanup                +   easyadmin.server.cleanup
+/configure            easyadmin.bot.configure              +   easyadmin.server.convars
+/add_ace              easyadmin.bot.add_ace                +   easyadmin.server.permissions.manage
+/remove_ace           easyadmin.bot.remove_ace             +   easyadmin.server.permissions.manage
+/add_group            easyadmin.bot.add_group              +   easyadmin.server.permissions.manage
+/remove_group         easyadmin.bot.remove_group           +   easyadmin.server.permissions.manage
+/punishmenthistory    easyadmin.bot.punishmenthistory      +   easyadmin.player.actionhistory.view
+/punishmenthistory    easyadmin.bot.punishmenthistory      +   easyadmin.player.actionhistory.delete
+  (remove entry)
+
+==============================
+  Example - giving a role all ban permissions:
+REPLACE "ROLEID" with your role ids. (NO QUOTES!)
+==============================
+
+add_ace role:ROLEID easyadmin.bot.ban allow
+add_ace role:ROLEID easyadmin.player.ban.temporary allow
+add_ace role:ROLEID easyadmin.player.ban.permanent allow
+add_ace role:ROLEID easyadmin.bot.unban allow
+add_ace role:ROLEID easyadmin.player.ban.remove allow
+add_ace role:ROLEID easyadmin.bot.baninfo allow
+add_ace role:ROLEID easyadmin.player.ban.view allow
+
+==============================
+  Required in server.cfg for add/remove_principal to work:
+==============================
+
+add_ace resource.EasyAdmin-ox command.add_principal allow
+add_ace resource.EasyAdmin-ox command.remove_principal allow
