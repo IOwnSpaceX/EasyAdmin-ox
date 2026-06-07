@@ -887,6 +887,17 @@ Citizen.CreateThread(function()
 		end
 	end
 	exports('addActionHistory', addActionHistory)
+
+	local function getActionHistory(discordId)
+		if not discordId or discordId == '' then return {} end
+		return Storage.getAction(discordId) or {}
+	end
+	exports('getActionHistory', getActionHistory)
+
+	local function deleteActionHistory(actionId)
+		Storage.removeAction(actionId)
+	end
+	exports('deleteActionHistory', deleteActionHistory)
 	
 	AddEventHandler("EasyAdmin:GetVersion", function(cb)
 		cb(GetVersion())
