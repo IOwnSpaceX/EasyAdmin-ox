@@ -104,7 +104,13 @@ AddEventHandler("Liam:JailPlayerServer", function(targetId, jailtime, jailReason
             Storage.addAction("~y~JAILED~w~~s~", discordId, formattedReason, modName, moderatorDiscordId)
         end
         TriggerClientEvent("Liam:JailPlayer", targetPlayer, jailtime, jailReason)
-        exports['EasyAdmin-ox']:freezePlayer(targetPlayer, false)
+        if FrozenPlayers and FrozenPlayers[targetPlayer] then
+            FrozenPlayers[targetPlayer] = nil
+            TriggerClientEvent("EasyAdmin:FreezePlayer", targetPlayer, false)
+            for i,_ in pairs(OnlineAdmins) do
+                TriggerLatentClientEvent("EasyAdmin:SetPlayerFrozen", i, 1000, targetPlayer, nil)
+            end
+        end
     end
 end)
 
