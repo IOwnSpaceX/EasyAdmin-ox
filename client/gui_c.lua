@@ -815,7 +815,7 @@ function GenerateMenu()
 								local BanDurationText = ""
 
 								if BanDuration == 'permanent' then
-									BanLength = -1
+									BanLength = 10444633200
 									BanDurationText = "Permanent"
 								elseif AmountOfTime > 0 then
 									if BanDuration == 'hours' then
@@ -833,7 +833,7 @@ function GenerateMenu()
 									end
 								end
 
-								if BanLength > 0 or BanLength == -1 then
+								if BanLength > 0 then
 									TriggerServerEvent("EasyAdmin:banPlayer", thePlayer.id, BanReason, BanLength,
 										thePlayer.name)
 									lib.notify({
