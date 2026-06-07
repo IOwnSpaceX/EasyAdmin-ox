@@ -228,12 +228,34 @@ function GetLocalisedText(string)
 end
 exports('GetLocalisedText', GetLocalisedText)
 
-function formatDateString(string)
-	if string >= 10444633200 then
+function formatDateString(timestamp)
+	if timestamp >= 10444633200 then
 		return "Permanent Ban"
 	end
-	local dateFormat = GetConvar("ea_dateFormat", '%d/%m/%Y 	%H:%M:%S')
-	return os.date(dateFormat, string)
+
+	local now  = os.time()
+	local diff = timestamp - now
+	if diff <= 0 then return "Expired" end
+
+	local months = { "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" }
+
+	local years   = math.floor(diff / 31536000)
+	local days    = math.floor((diff % 31536000) / 86400)
+	local hours   = math.floor((diff % 86400) / 3600)
+	local minutes = math.floor((diff % 3600) / 60)
+
+	local parts = {}
+	if years   > 0 then parts[#parts+1] = years   .. "y" end
+	if days    > 0 then parts[#parts+1] = days    .. "d" end
+	if hours   > 0 then parts[#parts+1] = hours   .. "h" end
+	if minutes > 0 then parts[#parts+1] = minutes .. "m" end
+	if #parts == 0 then parts[#parts+1] = "< 1m" end
+
+	local day   = tonumber(os.date("%d", timestamp))
+	local month = months[tonumber(os.date("%m", timestamp))]
+	local year  = os.date("%Y", timestamp)
+
+	return table.concat(parts, " ") .. " (" .. day .. ", " .. month .. ", " .. year .. ")"
 end
 
 function formatShortcuts(thisstring)
