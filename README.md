@@ -35,7 +35,7 @@ https://github.com/user-attachments/assets/75fefa1f-dea6-45e2-8855-7cf27cd67ad5
 - **ox_target Integration** — Ban, kick, revive, respawn and more directly through [ox_target](https://github.com/overextended/ox_target) while clocked in
 - **Kill/Death Log** — View a player's recent kills and deaths within the last 30 minutes directly from the menu — useful for tracking RDM/VDM
 - **Remove All Player Weapons** — Clears the inventory of a selected player from the misc options
-- **Show Player Names** — See other players' names through EasyAdmin (disable noclip in vMenu to avoid conflicts)
+- **Show Player Names** — See other players' names through EasyAdmin (disable "Show Player Names" in vMenu to avoid conflicts)
 - **Staff Duty System** — Full clock in/out system with webhooks, DMs, abuse detection, hour tracking, and suspension management
 - **Action/Punishment History** — Every ban is logged with Ban ID, duration, and moderator info, viewable in-menu and via Discord bot
 
