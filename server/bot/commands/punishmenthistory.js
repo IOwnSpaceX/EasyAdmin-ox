@@ -1,0 +1,161 @@
+
+
+module.exports = {
+	data: new SlashCommandBuilder()
+		.setName('punishmenthistory')
+		.setDescription('View punishment history for a player by Discord ID')
+		.addStringOption(option =>
+			option.setName('discordid')
+				.setDescription('The Discord user ID of the player')
+				.setRequired(true))
+		.addStringOption(option =>
+			option.setName('removeid')
+				.setDescription('Action ID to remove (requires easyadmin.player.actionhistory.delete)')
+				.setRequired(false)),
+	async execute(interaction, exports) {
+		// Must have view permission at minimum
+		if (!await DoesGuildMemberHavePermission(interaction.member, 'player.actionhistory.view')) {
+			return interaction.reply({ content: 'Insufficient permissions: `easyadmin.player.actionhistory.view`', ephemeral: true })
+		}
+
+		const discordId = interaction.options.getString('discordid').trim().replace(/[<@!>]/g, '')
+		const removeId = interaction.options.getString('removeid')
+
+		// Handle action removal
+		if (removeId) {
+			if (!await DoesGuildMemberHavePermission(interaction.member, 'player.actionhistory.delete')) {
+				return interaction.reply({ content: 'Insufficient permissions: `easyadmin.player.actionhistory.delete`', ephemeral: true })
+			}
+
+			const actionId = parseInt(removeId)
+			if (isNaN(actionId)) {
+				return interaction.reply({ content: '❌ Invalid action ID — must be a number.', ephemeral: true })
+			}
+
+			exports[EasyAdmin].deleteActionHistory(actionId)
+
+			LogDiscordMessage(
+				`🗑️ **${interaction.user.tag}** removed action history entry **#${actionId}** for Discord ID \`${discordId}\``,
+				'moderation',
+				0xE74C3C
+			)
+
+			let embed = new EmbedBuilder()
+				.setColor(0x2ECC71)
+				.setTitle('🗑️ Action Removed')
+				.setDescription(`Action **#${actionId}** has been removed from the history for <@${discordId}>.`)
+				.setTimestamp()
+				.setFooter({ text: `Removed by ${interaction.user.tag}` })
+
+			return interaction.reply({ embeds: [embed] })
+		}
+
+		// Fetch history
+		const history = await exports[EasyAdmin].getActionHistory(discordId)
+
+		if (!history || history.length === 0) {
+			let embed = new EmbedBuilder()
+				.setColor(0x95A5A6)
+				.setTitle('📋 No Punishment History')
+				.setDescription(`No punishment history found for <@${discordId}> (\`${discordId}\`).`)
+				.setTimestamp()
+				.setFooter({ text: 'EasyAdmin Action History' })
+			return interaction.reply({ embeds: [embed] })
+		}
+
+		// Try to fetch Discord user for display
+		let discordUser = null
+		try {
+			discordUser = await client.users.fetch(discordId)
+		} catch(e) {}
+
+		const canDelete = await DoesGuildMemberHavePermission(interaction.member, 'player.actionhistory.delete')
+
+		// Build paginated embeds — max 5 entries per page
+		const pageSize = 5
+		const pages = []
+
+		for (let i = 0; i < history.length; i += pageSize) {
+			const chunk = history.slice(i, i + pageSize)
+
+			let embed = new EmbedBuilder()
+				.setColor(0xE67E22)
+				.setTitle(`📋 Punishment History${discordUser ? ` — ${discordUser.tag}` : ` — ${discordId}`}`)
+				.setTimestamp()
+				.setFooter({ text: `EasyAdmin Action History • Page ${Math.floor(i/pageSize)+1}/${Math.ceil(history.length/pageSize)} • ${history.length} total entries` })
+
+			if (discordUser) {
+				embed.setThumbnail(discordUser.displayAvatarURL())
+			}
+
+			for (const entry of chunk) {
+				const actionType = (entry.action || 'UNKNOWN').replace(/~[a-z]~/gi, '').trim()
+				const moderator = entry.moderator || 'Unknown'
+				const reason = entry.reason || 'No reason provided'
+				const entryId = entry.id || '?'
+
+				let fieldValue = `**Moderator:** ${moderator}\n**Reason:** ${reason}`
+				if (canDelete) {
+					fieldValue += `\n*Remove: \`/punishmenthistory discordid:${discordId} removeid:${entryId}\`*`
+				}
+
+				embed.addFields([{
+					name: `[#${entryId}] ${actionType}`,
+					value: fieldValue,
+					inline: false
+				}])
+			}
+
+			pages.push(embed)
+		}
+
+		if (pages.length === 1) {
+			return interaction.reply({ embeds: [pages[0]] })
+		}
+
+		// Multi-page with navigation buttons
+		let currentPage = 0
+		const timestamp = Date.now()
+
+		const prevButton = new ButtonBuilder()
+			.setCustomId(`ph_prev_${timestamp}`)
+			.setLabel('◀ Previous')
+			.setStyle(ButtonStyle.Secondary)
+			.setDisabled(true)
+
+		const nextButton = new ButtonBuilder()
+			.setCustomId(`ph_next_${timestamp}`)
+			.setLabel('Next ▶')
+			.setStyle(ButtonStyle.Secondary)
+			.setDisabled(pages.length <= 1)
+
+		const row = new ActionRowBuilder().addComponents(prevButton, nextButton)
+
+		await interaction.reply({ embeds: [pages[0]], components: [row] })
+
+		const collector = interaction.channel.createMessageComponentCollector({
+			filter: i => (i.customId === `ph_prev_${timestamp}` || i.customId === `ph_next_${timestamp}`) && i.user.id === interaction.user.id,
+			time: 120000
+		})
+
+		collector.on('collect', async i => {
+			if (i.customId === `ph_next_${timestamp}`) currentPage++
+			else if (i.customId === `ph_prev_${timestamp}`) currentPage--
+
+			currentPage = Math.max(0, Math.min(pages.length - 1, currentPage))
+
+			prevButton.setDisabled(currentPage === 0)
+			nextButton.setDisabled(currentPage === pages.length - 1)
+
+			const updatedRow = new ActionRowBuilder().addComponents(prevButton, nextButton)
+			await i.update({ embeds: [pages[currentPage]], components: [updatedRow] })
+		})
+
+		collector.on('end', async () => {
+			prevButton.setDisabled(true)
+			nextButton.setDisabled(true)
+			const disabledRow = new ActionRowBuilder().addComponents(prevButton, nextButton)
+			await interaction.editReply({ components: [disabledRow] }).catch(() => {})
+		})
+	},
+}
