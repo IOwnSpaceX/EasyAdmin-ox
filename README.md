@@ -1,34 +1,72 @@
-For this resource to work the resource must be named `EasyAdmin-ox` and you must have [ox_lib](https://github.com/overextended/ox_lib) or else the duty system and other features will break!
+# EasyAdmin-ox
+> A heavily modified version of [Blumlaut's EasyAdmin](https://github.com/Blumlaut/EasyAdmin) for FiveM, built around [ox_lib](https://github.com/overextended/ox_lib).
 
-* **Important** updates have been pushed out since 06/05/2026. This is your notice to update EasyAdmin-ox to the newest version that I have posted. In this new update to EasyAdmin have have cleaned up some of the errors regarding the bot. I have also pushed out EasyAdmin Staff Tags. Now you can see which staff members are clocked in and see their rank. I have also added a system in which you can hide your tag if you have the correct ace permissions to do so. I have also made a show player names function that allows you to see other players names through EasyAdmin (disable in vMenu) and turns green when the player is clocked in showing their staff rank. To edit this system please use `plugins/rank_config.lua`. The next minor update is the "Remove All Player Weapons" in the misc options which clears the inventory of the selected player. I have added a kill/death log into the menu to view a users recent kills/deaths within the menu up to 30 minutes. This should help keep track of RDM/VDM in servers. Lastly, It's finally here [ox_target](https://github.com/overextended/ox_target) is now incorporated into EA-ox! Now you can ban, kick, revive, respawn, etc. Through "ox_target" while clocked in. Thank you for using my modified EA!
+---
 
-# About EasyAdmin-ox
-Hello, and welcome to EasyAdmin-ox an idea to bring more customizability/tweaks to the already great EasyAdmin menu created by [Blumlaut](https://github.com/Blumlaut). This specific menu takes advantage of the [ox_lib](https://github.com/overextended/ox_lib) library and functions. Thank you so much to [Easyadmin](https://github.com/Blumlaut/EasyAdmin) for the incredible base menu. For documentation and ace perms [click me!](https://easyadmin.readthedocs.io/en/7.51) If you find any issues please feel free to make a [issues request](https://github.com/IOwnSpaceX/EasyAdmin-ox/issues) or if you know how to solve the issue create a [pull request](https://github.com/IOwnSpaceX/EasyAdmin-ox/pulls) and I will lookover your changes. For addon ace perms that have been created by I and other contributors please scroll down. 👇
+> [!IMPORTANT]
+> The resource folder **must** be named exactly `EasyAdmin-ox` or it will not work.
+> [ox_lib](https://github.com/overextended/ox_lib) is **required**. Without it the duty system and other features will break.
 
-# EasyAdmin-ox Ace Perms
-**Action/Punishment History ACES:**
-* `add_ace group.NAME easyadmin.player.actionhistory.view allow`
-* `add_ace group.NAME easyadmin.player.actionhistory.add allow`
-* `add_ace group.NAME easyadmin.player.actionhistory.delete allow`
-* `add_ace group.NAME easyadmin.player.viewdeathkillhistory allow`
+---
 
-**Utility ACES:**
-* `add_ace group.NAME clockin.bypass allow`
-* `add_ace group.NAME easyadmin.player.noclip allow`
+## 📖 Documentation
 
-**Revive & Respawn ACES:**
-* `add_ace group.NAME easyadmin.player.adrev allow`
-* `add_ace group.NAME easyadmin.player.adres allow`
-* `add_ace group.NAME easyadmin.player.adrevall allow`
-* `add_ace group.NAME easyadmin.player.adresall allow`
+Full setup guide, ConVars, ACE permissions, Original Permission List Included, Bot Setup, and more:
 
-**Jail Function ACES:**
-* `add_ace group.NAME easyadmin.player.jail allow`
-* `add_ace group.NAME easyadmin.player.unjail allow`
+**➜ https://liam-3.gitbook.io/easyadmin-ox**
 
-**Rank System ACES:**
-* `add_ace group.NAME easyadmin.hideownrank allow`
+For the original EasyAdmin permission list:
+**➜ https://easyadmin.readthedocs.io/en/latest/permissions/**
 
+---
 
-# PREVIEW VIDEO
+## 🎬 Preview
+
 https://github.com/user-attachments/assets/75fefa1f-dea6-45e2-8855-7cf27cd67ad5
+
+---
+
+## ✨ What's New
+
+> **Important:** Updates have been pushed since **06/05/2026**. Please update to the newest version.
+
+- **Staff Tags** — Clocked-in staff members now display their rank above their name. Name turns green when on duty. Configure in `plugins/rank_config.lua`
+- **Hide Own Rank** — Staff with the correct ACE can hide their own tag from other players
+- **ox_target Integration** — Ban, kick, revive, respawn and more directly through [ox_target](https://github.com/overextended/ox_target) while clocked in
+- **Kill/Death Log** — View a player's recent kills and deaths within the last 30 minutes directly from the menu — useful for tracking RDM/VDM
+- **Remove All Player Weapons** — Clears the inventory of a selected player from the misc options
+- **Show Player Names** — See other players' names through EasyAdmin (disable noclip in vMenu to avoid conflicts)
+- **Staff Duty System** — Full clock in/out system with webhooks, DMs, abuse detection, hour tracking, and suspension management
+- **Action/Punishment History** — Every ban is logged with Ban ID, duration, and moderator info, viewable in-menu and via Discord bot
+
+---
+
+## ⚡ Quick Install
+
+1. Download the zip
+2. Extract and place the folder in your server's `resources` directory
+3. **Rename the folder to `EasyAdmin-ox`**
+4. Add to your `server.cfg`:
+   ```
+   ensure EasyAdmin-ox
+   ```
+5. Add your ACE permissions — see the [documentation](https://liam-3.gitbook.io/easyadmin-ox)
+6. Restart your server
+
+---
+
+## 🤝 Contributing
+
+Found a bug? Have a fix?
+
+- [Open an issue](https://github.com/IOwnSpaceX/EasyAdmin-ox/issues)
+- [Submit a pull request](https://github.com/IOwnSpaceX/EasyAdmin-ox/pulls)
+
+---
+
+## 🙏 Credits
+
+- [Blumlaut](https://github.com/Blumlaut) — Original EasyAdmin
+- [overextended](https://github.com/overextended) — ox_lib & ox_target
+- [ItsAmmarB](https://github.com/ItsAmmarB) — DeathScript base
+- [Liam](https://github.com/IOwnSpaceX) (IOwnSpaceX) — EasyAdmin-ox modifications
