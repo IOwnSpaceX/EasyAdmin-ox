@@ -404,8 +404,13 @@ RegisterCommand("clockout", function(source, args, rawCommand)
 end, false)
 
 AddEventHandler('playerDropped', function(reason)
-    playerCooldowns[source]   = nil
-    playerClockInTime[source] = nil
+    local src = source
+    if Player(src).state['easyadmin-ox:clockedIn'] == 'yes' then
+        Player(src).state:set('easyadmin-ox:clockedIn', 'no', true)
+        OnClockOut(src, false, nil)
+    end
+    playerCooldowns[src]   = nil
+    playerClockInTime[src] = nil
 end)
 
 -- ============================================================
