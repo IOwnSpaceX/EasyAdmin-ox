@@ -185,7 +185,6 @@ async function LogDiscordMessage(text, feature, colour) {
 	if (GetConvar('ea_botLogChannel', '') == '') {return}
 	if (feature == 'report' || feature == 'calladmin') {return}
 	const embed = await prepareGenericEmbed(text,undefined,colour)
-	// Jail actions get their own dedicated channel if set
 	var channelId
 	if ((feature == 'jail') && GetConvar('ea_jailLogChannel', '') != '') {
 		channelId = GetConvar('ea_jailLogChannel', '')
@@ -428,7 +427,7 @@ async function getServerStatus(why) {
 		var button = new ButtonBuilder()
 			.setURL(`https://${joinURL}`)
 			.setLabel('Join Server')
-			.setStyle(ButtonStyle.Link)
+			.setStyle(ButtonStyle && ButtonStyle.Link    || 5)
 		buttonRow.addComponents([button])
 	} else {
 		joinURL = ''
@@ -589,6 +588,304 @@ if (GetConvar('ea_botToken', '') != '') {
 			startupMessage+=`\nVersion ${latestVersionInfo[0]} is Available!\n Download it from ${latestVersionInfo[1]}`
 		}
 		LogDiscordMessage(startupMessage, 'startup')
+
+		//Ban Management Log System
+		const _banMgmtSent = new Set()
+
+		async function resolveDiscordMemberByTag(tag) {
+			for (const guild of client.guilds.cache.values()) {
+				try {
+					const members = await guild.members.fetch({ query: tag.replace(/\[.*?\]/g, '').trim(), limit: 1 })
+					if (members.size) return members.first()
+				} catch (_) {}
+			}
+			return null
+		}
+		function buildBanEmbed(banData, state, actionUser) {
+			const colours = { pending: 0xF1C40F, approved: 0x2ECC71, revoked: 0xE74C3C }
+			const titles  = { pending: '🔨 Ban Issued', approved: '✅ Ban Approved', revoked: '❌ Ban Revoked' }
+
+			const isPermanent = !banData.expire || banData.expire >= 10444633200
+
+			const embed = new EmbedBuilder()
+				.setColor(colours[state] || colours.pending)
+				.setTitle(titles[state] || titles.pending)
+				.setDescription('A player has been banned from the server')
+				.addFields(
+					{
+						name: '👤 Banned Player',
+						value: banData.discordMention ? `${banData.discordMention}\n${banData.name}` : `\`${banData.name || 'Unknown'}\``,
+						inline: true,
+					},
+					{
+						name: '🛡️ Banned By',
+						value: banData.bannerMention ? `${banData.bannerMention} ${banData.banner}` : `\`${banData.banner || 'Unknown'}\``,
+						inline: true,
+					},
+					{
+						name: '🆔 Ban ID',
+						value: `\`#${banData.banid}\``,
+						inline: true,
+					},
+					{
+						name: '📋 Reason',
+						value: `\`\`\`\n${banData.reason || 'No reason provided'}\n\`\`\``,
+						inline: false,
+					},
+					{
+						name: '⏱️ Duration',
+						value: banData.durationLabel || (isPermanent ? 'Permanent' : 'Temporary'),
+						inline: true,
+					},
+					{
+						name: '🗓️ Expires',
+						value: isPermanent
+							? '`Never`'
+							: `<t:${Math.floor(banData.expire)}:F> | <t:${Math.floor(banData.expire)}:R>`,
+						inline: true,
+					},
+				)
+				.setTimestamp()
+
+			let footerText = `EasyAdmin • Ban ID: #${banData.banid}`
+			if (actionUser && state === 'approved') footerText += ` • Approved by ${actionUser.tag} (${actionUser.id})`
+			if (actionUser && state === 'revoked')  footerText += ` • Revoked by ${actionUser.tag} (${actionUser.id})`
+			embed.setFooter({ text: footerText })
+
+			return embed
+		}
+		function buildBanButtons(banId, disabled) {
+			return new ActionRowBuilder().addComponents(
+				new ButtonBuilder()
+					.setCustomId(`banmgmt_approve_${banId}`)
+					.setLabel('Approved')
+					.setStyle(ButtonStyle && ButtonStyle.Success || 3)
+					.setDisabled(!!disabled),
+				new ButtonBuilder()
+					.setCustomId(`banmgmt_revoke_${banId}`)
+					.setLabel('Revoke')
+					.setStyle(ButtonStyle && ButtonStyle.Danger || 4)
+					.setDisabled(!!disabled),
+				new ButtonBuilder()
+					.setCustomId(`banmgmt_proof_${banId}`)
+					.setLabel('Remind for Ban Proof')
+					.setStyle(ButtonStyle && ButtonStyle.Primary || 1)
+					.setDisabled(!!disabled),
+			)
+		}
+
+		function buildSingleButton(customId, label, style) {
+			return new ActionRowBuilder().addComponents(
+				new ButtonBuilder()
+					.setCustomId(customId)
+					.setLabel(label)
+					.setStyle(style)
+					.setDisabled(true),
+			)
+		}
+
+		async function sendBanLog(banData) {
+			const channelId = GetConvar('ea_banLogChannel', '')
+			if (!channelId || channelId === '' || channelId === 'false' || channelId === 'none') return
+			if (_banMgmtSent.has(banData.banid)) return
+			_banMgmtSent.add(banData.banid)
+			setTimeout(() => _banMgmtSent.delete(banData.banid), 5000)
+
+			const channel = await client.channels.fetch(channelId).catch(() => null)
+			if (!channel) {
+				console.error('[EasyAdmin BanMgmt] Could not find ea_banLogChannel — check the channel ID and bot permissions.')
+				return
+			}
+			if (banData.identifiers) {
+				for (const id of banData.identifiers) {
+					if (id && id.startsWith('discord:')) {
+						banData.discordMention = `<@${id.slice(8)}>`
+						break
+					}
+				}
+			}
+			if (banData.bannerDiscord) {
+				banData.bannerMention = `<@${banData.bannerDiscord}>`
+			}
+
+			const embed   = buildBanEmbed(banData, 'pending')
+			const buttons = buildBanButtons(banData.banid, false)
+
+			let message
+			try {
+				message = await channel.send({ embeds: [embed], components: [buttons] })
+			} catch (err) {
+				console.error('[EasyAdmin BanMgmt] Failed to send ban log message:', err)
+				return
+			}
+			try {
+				const safePlayerName = (banData.name || 'Unknown').replace(/[^\w\s-]/g, '').trim().substring(0, 50)
+				const thread = await message.startThread({
+					name: `Ban #${banData.banid} - ${safePlayerName}`,
+					autoArchiveDuration: 10080,
+				})
+
+				let pingText = '@here'
+				if (banData.bannerDiscord) {
+					pingText = `<@${banData.bannerDiscord}>`
+				} else if (banData.banner) {
+					const found = await resolveDiscordMemberByTag(banData.banner).catch(() => null)
+					if (found) pingText = `<@${found.user.id}>`
+				}
+
+				await thread.send(
+					`${pingText}, please provide proof for this ban.\n` +
+					`**Ban ID:** \`#${banData.banid}\` | **Player:** \`${banData.name}\``
+				)
+			} catch (threadErr) {
+				console.error('[EasyAdmin BanMgmt] Could not create proof thread:', threadErr)
+			}
+		}
+
+		exports('sendBanLog', sendBanLog)
+
+		async function handleBanManagementButton(interaction) {
+			if (!interaction.isButton()) return
+			const { customId } = interaction
+			if (!customId.startsWith('banmgmt_')) return
+
+			await refreshRolesForMember(interaction.member)
+			const hasPerm = await DoesGuildMemberHavePermission(interaction.member, 'bot.banmanagement')
+			if (!hasPerm) {
+				await interaction.reply({ content: 'You do not have permission to manage bans. Required ace: `easyadmin.bot.banmanagement`', ephemeral: true })
+				return
+			}
+
+			const parts  = customId.split('_')
+			const action = parts[1]
+			const banId  = parts.slice(2).join('_')
+			const actor  = { tag: interaction.user.tag, id: interaction.user.id }
+
+			//APPROVE
+			if (action === 'approve') {
+				const ban = await exports[EasyAdmin].fetchBan(banId)
+				const banData = ban || { banid: banId, name: 'Unknown', banner: 'Unknown', reason: 'N/A', expire: 10444633200 }
+
+				if (ban) {
+					const fields = interaction.message.embeds[0] && interaction.message.embeds[0].fields
+					if (fields) {
+						const playerField = fields.find(f => f.name.includes('Banned Player'))
+						const bannerField = fields.find(f => f.name.includes('Banned By'))
+						if (playerField) banData.discordMention = playerField.value.split('\n')[0]
+						if (bannerField) banData.bannerMention  = bannerField.value.split(' ')[0]
+					}
+				}
+
+				const updatedEmbed  = buildBanEmbed(banData, 'approved', actor)
+				const singleButton  = buildSingleButton(`banmgmt_approve_${banId}`, `Approved by: ${actor.tag} (${actor.id})`, ButtonStyle && ButtonStyle.Success || 3)
+
+				try {
+					await interaction.update({ embeds: [updatedEmbed], components: [singleButton] })
+				} catch (err) {
+					console.error('[EasyAdmin BanMgmt] Approve update failed:', err)
+					try { await interaction.reply({ content: '✅ Ban approved.', ephemeral: true }) } catch(_) {}
+				}
+
+				try {
+					const thread = interaction.message.thread || await interaction.message.fetchThread().catch(() => null)
+					if (thread) await thread.send(`✅ Ban **#${banId}** has been **approved** by <@${actor.id}>.`)
+				} catch (_) {}
+				return
+			}
+
+			//REVOKE
+			if (action === 'revoke') {
+				const ban = await exports[EasyAdmin].fetchBan(banId)
+				const ret = await exports[EasyAdmin].unbanPlayer(banId)
+				const banData = ban || { banid: banId, name: 'Unknown', banner: 'Unknown', reason: 'N/A', expire: 10444633200 }
+
+				if (ban) {
+					const fields = interaction.message.embeds[0] && interaction.message.embeds[0].fields
+					if (fields) {
+						const playerField = fields.find(f => f.name.includes('Banned Player'))
+						const bannerField = fields.find(f => f.name.includes('Banned By'))
+						if (playerField) banData.discordMention = playerField.value.split('\n')[0]
+						if (bannerField) banData.bannerMention  = bannerField.value.split(' ')[0]
+					}
+				}
+
+				if (ret) {
+					const updatedEmbed = buildBanEmbed(banData, 'revoked', actor)
+					const singleButton = buildSingleButton(`banmgmt_revoke_${banId}`, `Revoked by: ${actor.tag} (${actor.id})`, ButtonStyle && ButtonStyle.Danger || 4)
+
+					try {
+						await interaction.update({ embeds: [updatedEmbed], components: [singleButton] })
+					} catch (err) {
+						console.error('[EasyAdmin BanMgmt] Revoke update failed:', err)
+						try { await interaction.reply({ content: `❌ Ban \`#${banId}\` revoked.`, ephemeral: true }) } catch(_) {}
+					}
+
+					try {
+						const thread = interaction.message.thread || await interaction.message.fetchThread().catch(() => null)
+						if (thread) await thread.send(`❌ Ban **#${banId}** has been **revoked** by <@${actor.id}>.`)
+					} catch (_) {}
+				} else {
+					await interaction.reply({ content: `Could not revoke ban \`#${banId}\`. It may have already been removed.`, ephemeral: true })
+				}
+				return
+			}
+
+			//REMIND FOR PROOF
+			if (action === 'proof') {
+				const ban = await exports[EasyAdmin].fetchBan(banId)
+
+				let threadUrl = null
+				let thread = null
+				try {
+					thread = interaction.message.thread || await interaction.message.fetchThread().catch(() => null)
+					if (thread) threadUrl = `https://discord.com/channels/${interaction.guildId}/${thread.id}`
+				} catch (_) {}
+
+				let staffUser = null
+				if (ban && ban.bannerDiscord) {
+					try { staffUser = await client.users.fetch(ban.bannerDiscord) } catch (_) {}
+				}
+				if (!staffUser && ban && ban.banner) {
+					const member = await resolveDiscordMemberByTag(ban.banner).catch(() => null)
+					if (member) staffUser = member.user
+				}
+
+				let dmSent = false
+				if (staffUser) {
+					try {
+						const dmEmbed = new EmbedBuilder()
+							.setColor(0xF1C40F)
+							.setTitle('📋 Ban Proof Required')
+							.setDescription(`You have been reminded to provide proof for a ban you issued.`)
+							.addFields(
+								{ name: '🆔 Ban ID',    value: `\`#${banId}\``,                         inline: true },
+								{ name: '👤 Player',    value: `\`${ban ? ban.name : 'Unknown'}\``,      inline: true },
+								{ name: '📋 Reason',    value: ban ? ban.reason : 'N/A',                 inline: false },
+								{ name: '🔗 Ban Thread', value: threadUrl ? `[Click here to open](${threadUrl})` : 'Thread not found', inline: false },
+							)
+							.setTimestamp()
+							.setFooter({ text: `Reminder sent by ${actor.tag}` })
+
+						await staffUser.send({ embeds: [dmEmbed] })
+						dmSent = true
+					} catch (_) {}
+				}
+
+				if (thread) {
+					try {
+						let pingText = ban && ban.bannerDiscord ? `<@${ban.bannerDiscord}>` : (ban ? `\`${ban.banner}\`` : 'the banning staff member')
+						await thread.send(`📋 ${pingText}, please provide proof for this ban.\n*(Reminder sent by <@${actor.id}>)*`)
+					} catch (_) {}
+				}
+
+				const status = dmSent ? '✅ DM sent to the staff member.' : '⚠️ Could not DM the staff member (DMs may be closed or user not found).'
+				await interaction.reply({ content: `${status}${thread ? ' A reminder was also posted in the ban thread.' : ''}`, ephemeral: true })
+				return
+			}
+		}
+
+		client.on('interactionCreate', handleBanManagementButton)
+		console.log('[EasyAdmin BanMgmt] Ban management button handler registered.')
 	})
 
 	client.on('debug', function(info){
