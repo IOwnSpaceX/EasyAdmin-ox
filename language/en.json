@@ -52,6 +52,7 @@
     "noactions": "No actions found.",
     "noactionsguide": "No past moderation actions for this user.",
     "deleteaction": "Delete Action",
+	"actionhistorydeleted": "%s deleted action history entry %s.",
     "deleteactionguide": "Delete this action from the history.",
     "actiondeleted": "Action deleted.",
     "refreshactionhistory": "Refresh Action History",
