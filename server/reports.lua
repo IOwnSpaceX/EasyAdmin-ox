@@ -21,13 +21,14 @@ AddEventHandler('playerDropped', function (reason)
 	end
 end)
 
-cooldowns = {} -- DO NOT TOUCH THIS
+cooldowns = {}
 
 Citizen.CreateThread(function()
-    
+
     PlayerReports = {}
-    
+
     if GetConvar("ea_enableCallAdminCommand", "true") == "true" then
+
         RegisterCommand(GetConvar("ea_callAdminCommandName", "calladmin"), function(source, args, rawCommand)
             if args[1] then
                 local time = os.time()
@@ -37,7 +38,7 @@ Citizen.CreateThread(function()
                     TriggerClientEvent("EasyAdmin:showNotification", source, GetLocalisedText("waitbeforeusingagain"))
                     return
                 end
-                
+
                 local reason = string.gsub(rawCommand, GetConvar("ea_callAdminCommandName", "calladmin").." ", "")
                 local reportid = addNewReport(0, source, _,reason)
                 for i,_ in pairs(OnlineAdmins) do
@@ -52,13 +53,12 @@ Citizen.CreateThread(function()
                         TriggerClientEvent("EasyAdmin:showNotification", i, notificationText)
                     end
                 end
-                
-                
+
                 local preferredWebhook = (reportNotification ~= "false") and reportNotification or moderationNotification
                 SendWebhookMessage(preferredWebhook,string.format(GetLocalisedText("playercalledforadmin"), getName(source, true, true), reason, reportid), "calladmin", 16776960)
-                --TriggerClientEvent('chatMessage', source, "^3EasyAdmin^7", {255,255,255}, GetLocalisedText("admincalled"))
+
                 TriggerClientEvent("EasyAdmin:showNotification", source, GetLocalisedText("admincalled"))
-                
+
                 time = os.time()
                 cooldowns[source] = time
             else
@@ -66,6 +66,77 @@ Citizen.CreateThread(function()
             end
         end, false)
     end
+
+    RegisterServerEvent("EasyAdmin:SubmitCallAdmin")
+    AddEventHandler("EasyAdmin:SubmitCallAdmin", function(reason, clipLink, targetId)
+        local source = source
+
+        if GetConvar("ea_enableCallAdminCommand", "true") ~= "true" then return end
+
+        if not reason or type(reason) ~= "string" or #string.gsub(reason, "^%s*(.-)%s*$", "%1") < 3 then
+            TriggerClientEvent("EasyAdmin:showNotification", source, GetLocalisedText("invalidreport"))
+            return
+        end
+
+        local time = os.time()
+        local cooldowntime = GetConvarInt("ea_callAdminCooldown", 60)
+        if cooldowns[source] and cooldowns[source] > (time - cooldowntime) then
+            TriggerClientEvent("EasyAdmin:showNotification", source, GetLocalisedText("waitbeforeusingagain"))
+            return
+        end
+
+        if clipLink and type(clipLink) == "string" and clipLink ~= "" then
+            if not IsAllowedClipDomain(clipLink) then
+                clipLink = nil
+            end
+        else
+            clipLink = nil
+        end
+
+        local targetName = nil
+        local targetDiscord = nil
+        if targetId and tostring(targetId) ~= "" then
+            targetId = tonumber(targetId)
+            if targetId and GetPlayerName(targetId) then
+                targetName = getName(targetId, true)
+                local discordIdentifier = GetPlayerIdentifierByType(targetId, "discord")
+                if discordIdentifier then
+                    targetDiscord = string.gsub(discordIdentifier, "discord:", "")
+                end
+            else
+                targetId = nil
+            end
+        else
+            targetId = nil
+        end
+
+        local reportid = addNewReport(0, source, targetId, reason, clipLink, targetName, targetDiscord)
+
+        for i,_ in pairs(OnlineAdmins) do
+            if Player(i).state['easyadmin-ox:clockedIn'] == 'yes' then
+                local notificationText = string.format(
+                    string.gsub(GetLocalisedText("playercalledforadmin"), "```", ""),
+                    getName(source,true,false),
+                    reason,
+                    reportid
+                )
+
+                TriggerClientEvent("EasyAdmin:showNotification", i, notificationText)
+            end
+        end
+
+        local webhookMessage = string.format(GetLocalisedText("playercalledforadmin"), getName(source, true, true), reason, reportid)
+        if targetId then
+            webhookMessage = webhookMessage .. string.format("**Regarding Player:** %s (ID: %s)\n", targetName or "Unknown", targetId)
+        end
+
+        local preferredWebhook = (reportNotification ~= "false") and reportNotification or moderationNotification
+        SendWebhookMessage(preferredWebhook, webhookMessage, "calladmin", 16776960, nil, nil, clipLink)
+
+        TriggerClientEvent("EasyAdmin:showNotification", source, GetLocalisedText("admincalled"))
+
+        cooldowns[source] = os.time()
+    end)
     if GetConvar("ea_enableReportCommand", "true") == "true" then
         RegisterCommand(GetConvar("ea_reportCommandName", "report"), function(source, args, rawCommand)
             if args[2] then
@@ -89,8 +160,7 @@ Citizen.CreateThread(function()
                 else
                     valid = true
                 end
-                
-                
+
                 if id and valid then
                     local reason = string.gsub(rawCommand, GetConvar("ea_reportCommandName", "report").." " ..args[1].." ", "")
                     if not PlayerReports[id] then
@@ -110,18 +180,17 @@ Citizen.CreateThread(function()
                         if GetConvar("ea_enableReportScreenshots", "true") == "true" then
                             TriggerEvent("EasyAdmin:TakeScreenshot", id)
                         end
-                        
-                        
-                        for i,_ in pairs(OnlineAdmins) do 
+
+                        for i,_ in pairs(OnlineAdmins) do
                             local notificationText = string.format(string.gsub(GetLocalisedText("playerreportedplayer"), "```", ""), getName(source, false, false), getName(id, true, false), reason, #PlayerReports[id], minimumreports, reportid)
-                            TriggerClientEvent('chat:addMessage', i, { 
+                            TriggerClientEvent('chat:addMessage', i, {
                                 template = '<div style="padding: 0.5vw; margin: 0.5vw; background-color: rgba(253, 53, 53, 0.6); border-radius: 5px;"><i class="fas fa-user-crown"></i> {0} </div>',
-                                args = { "^3EasyAdmin Report^7\n"..notificationText }, color = { 255, 255, 255 } 
+                                args = { "^3EasyAdmin Report^7\n"..notificationText }, color = { 255, 255, 255 }
                             })
                             TriggerClientEvent("EasyAdmin:showNotification", i, notificationText)
                         end
                         TriggerClientEvent("EasyAdmin:showNotification", source, GetLocalisedText("successfullyreported"))
-                        
+
                         if #PlayerReports[id] >= minimumreports then
                             TriggerEvent("EasyAdmin:addBan", id, string.format(GetLocalisedText("reportbantext"), minimumreports), os.time()+GetConvarInt("ea_ReportBanTime", 86400))
                         end
@@ -129,9 +198,9 @@ Citizen.CreateThread(function()
                         TriggerClientEvent("EasyAdmin:showNotification", source, GetLocalisedText("alreadyreported"))
                     end
                 else
-                    TriggerClientEvent('chat:addMessage', source, { 
+                    TriggerClientEvent('chat:addMessage', source, {
                         template = '<div style="padding: 0.5vw; margin: 0.5vw; background-color: rgba(253, 53, 53, 0.6); border-radius: 5px;"><i class="fas fa-user-crown"></i> {0}:<br> {1}</div>',
-                        args = { "^3EasyAdmin^7", GetLocalisedText("reportedusageerror") }, color = { 255, 255, 255 } 
+                        args = { "^3EasyAdmin^7", GetLocalisedText("reportedusageerror") }, color = { 255, 255, 255 }
                     })
                     TriggerClientEvent("EasyAdmin:showNotification", source, GetLocalisedText("reportedusageerror"))
                 end
@@ -141,8 +210,7 @@ Citizen.CreateThread(function()
         end, false)
     end
 
-
-	function addNewReport(type, reporter, reported, reason)
+	function addNewReport(type, reporter, reported, reason, clipLink, reportedName, reportedDiscord)
         local t = nil
 
         if type == 1 then
@@ -161,6 +229,18 @@ Citizen.CreateThread(function()
                 reporterName = getName(reporter, true),
                 reason = reason
             }
+
+            if reported then
+                t.reported = reported
+                t.reportedName = reportedName or getName(reported, true)
+                if reportedDiscord then
+                    t.reportedDiscord = reportedDiscord
+                end
+            end
+        end
+
+        if clipLink then
+            t.clipLink = clipLink
         end
 
         t.id = #reports + 1
@@ -175,13 +255,13 @@ Citizen.CreateThread(function()
         TriggerEvent("EasyAdmin:reportAdded", t)
         return t.id
     end
-	
+
 	RegisterServerEvent("EasyAdmin:ClaimReport", function(reportId)
 		if DoesPlayerHavePermission(source, "player.reports.claim") then
 			if not reports[reportId].claimed then
 				reports[reportId].claimed = source
 				reports[reportId].claimedName = getName(source,true)
-				for admin,_ in pairs(OnlineAdmins) do 
+				for admin,_ in pairs(OnlineAdmins) do
 					TriggerLatentClientEvent("EasyAdmin:ClaimedReport", admin, 10000, reports[reportId])
 				end
                 TriggerEvent("EasyAdmin:reportClaimed", reports[reportId])
@@ -191,23 +271,23 @@ Citizen.CreateThread(function()
 			end
 		end
 	end)
-	
+
 	function removeReport(index,reporter,reported,reason)
 		for i, report in pairs(reports) do
 			if (index and i == index) then
-				for admin,_ in pairs(OnlineAdmins) do 
+				for admin,_ in pairs(OnlineAdmins) do
 					TriggerLatentClientEvent("EasyAdmin:RemoveReport", admin, 10000, report)
 				end
                 TriggerEvent("EasyAdmin:reportRemoved", report)
 				reports[i] = nil
 			elseif (reporter and reporter == report.reporter) then
-				for admin,_ in pairs(OnlineAdmins) do 
+				for admin,_ in pairs(OnlineAdmins) do
 					TriggerLatentClientEvent("EasyAdmin:RemoveReport", admin, 10000, report)
 				end
                 TriggerEvent("EasyAdmin:reportRemoved", report)
 				reports[i] = nil
 			elseif (reported and reported == report.reported) then
-				for admin,_ in pairs(OnlineAdmins) do 
+				for admin,_ in pairs(OnlineAdmins) do
 					TriggerLatentClientEvent("EasyAdmin:RemoveReport", admin, 10000, report)
 				end
                 TriggerEvent("EasyAdmin:reportRemoved", report)
@@ -215,32 +295,32 @@ Citizen.CreateThread(function()
 			end
 		end
 	end
-	
+
 	function removeSimilarReports(report)
 		for i, r in pairs(reports) do
 			if (report.reporter and report.reported) and (report.reporter == r.reporter and report.reported == r.reported) then
-				for admin,_ in pairs(OnlineAdmins) do 
+				for admin,_ in pairs(OnlineAdmins) do
 					TriggerLatentClientEvent("EasyAdmin:RemoveReport", admin, 10000, r)
 				end
                 TriggerEvent("EasyAdmin:reportRemoved", r)
 				reports[i] = nil
 			end
 			if (report.reason and report.reporter) and (report.reason == r.reason and report.reporter == r.reporter) then
-				for admin,_ in pairs(OnlineAdmins) do 
+				for admin,_ in pairs(OnlineAdmins) do
 					TriggerLatentClientEvent("EasyAdmin:RemoveReport", admin, 10000, r)
 				end
                 TriggerEvent("EasyAdmin:reportRemoved", r)
 				reports[i] = nil
 			end
 			if (report.reported) and (report.reported == r.reported) then
-				for admin,_ in pairs(OnlineAdmins) do 
+				for admin,_ in pairs(OnlineAdmins) do
 					TriggerLatentClientEvent("EasyAdmin:RemoveReport", admin, 10000, r)
 				end
                 TriggerEvent("EasyAdmin:reportRemoved", r)
 				reports[i] = nil
 			end
 			if (report.reporter) and (report.reporter == r.reporter) then
-				for admin,_ in pairs(OnlineAdmins) do 
+				for admin,_ in pairs(OnlineAdmins) do
 					TriggerLatentClientEvent("EasyAdmin:RemoveReport", admin, 10000, r)
 				end
                 TriggerEvent("EasyAdmin:reportRemoved", r)
@@ -249,26 +329,32 @@ Citizen.CreateThread(function()
 		end
 	end
 
-
 	function getAllReports()
 		return reports
 	end
 	exports('getAllReports', getAllReports)
 
-		
-	
+	function closeReport(reportId, closedByName)
+		reportId = tonumber(reportId)
+		if not reportId or not reports[reportId] then return false end
+		SendWebhookMessage(moderationNotification, string.format(GetLocalisedText("adminclosedreport"), closedByName or "Discord", reportId), "reports", 16777214)
+		removeReport(reportId)
+		return true
+	end
+	exports('closeReport', closeReport)
+
 	RegisterServerEvent("EasyAdmin:RemoveReport", function(report)
 		if DoesPlayerHavePermission(source, "player.reports.process") then
 			SendWebhookMessage(moderationNotification,string.format(GetLocalisedText("adminclosedreport"), getName(source, false, true), report.id), "reports", 16777214)
 			removeReport(report.id)
 		end
 	end)
-	
+
 	RegisterServerEvent("EasyAdmin:RemoveSimilarReports", function(report)
 		if DoesPlayerHavePermission(source, "player.reports.process") then
 			SendWebhookMessage(moderationNotification,string.format(GetLocalisedText("adminclosedreport"), getName(source, false, true), report.id), "reports", 16777214)
 			removeSimilarReports(report)
 		end
 	end)
-    
+
 end)
