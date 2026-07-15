@@ -27,17 +27,16 @@ RegisterCommand("ea_excludeWebhookFeature", function(source, args, rawCommand)
 	end
 end, false)
 
-
 function isWebhookFeatureExcluded(feature)
     return ExcludedWebhookFeatures[feature]
 end
 exports('isWebhookFeatureExcluded', isWebhookFeatureExcluded)
 
-function SendWebhookMessage(webhook,message,feature,colour,title,image)
+function SendWebhookMessage(webhook,message,feature,colour,title,image,linkContent)
     moderationNotification = GetConvar("ea_moderationNotification", "false")
     reportNotification = GetConvar("ea_reportNotification", "false")
     detailNotification = GetConvar("ea_detailNotification", "false")
-    
+
     if feature == "jail" and GetConvar("ea_jailLogChannel", "false") ~= "false" then
         webhook = GetConvar("ea_jailLogChannel", "false")
     end
@@ -55,7 +54,7 @@ function SendWebhookMessage(webhook,message,feature,colour,title,image)
     if image then
         embed[1]["image"] = { ["url"] = image }
     end
-    
+
     if GetConvar("ea_botLogChannel", "") ~= "" then
         exports[GetCurrentResourceName()]:LogDiscordMessage(message, feature, colour)
         return
@@ -63,5 +62,10 @@ function SendWebhookMessage(webhook,message,feature,colour,title,image)
 
     if webhook ~= "false" and ExcludedWebhookFeatures[feature] ~= true then
         PerformHttpRequest(webhook, function(err, text, headers) end, 'POST', json.encode({embeds = embed}), { ['Content-Type'] = 'application/json' })
+
+        if linkContent then
+
+            PerformHttpRequest(webhook, function(err, text, headers) end, 'POST', json.encode({content = linkContent}), { ['Content-Type'] = 'application/json' })
+        end
     end
 end
