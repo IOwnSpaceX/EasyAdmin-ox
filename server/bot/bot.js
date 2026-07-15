@@ -529,6 +529,7 @@ setTimeout(updateServerStatus, 10000)
 setInterval(updateServerStatus, 180000)
 
 // main bot logic
+var _slashCommandListenerRegistered = false
 async function RegisterClientCommands(clientId) {
 	const fs = require('fs')
 	const commands = []
@@ -546,6 +547,8 @@ async function RegisterClientCommands(clientId) {
 		Routes.applicationCommands(clientId),
 		{ body: commands },
 	)
+	if (_slashCommandListenerRegistered) { return }
+	_slashCommandListenerRegistered = true
 	client.on('interactionCreate', async interaction => {
 		if (!interaction.isCommand()) return
 		const command = client.commands.get(interaction.commandName)
@@ -573,21 +576,26 @@ async function RegisterClientCommands(clientId) {
 
 if (GetConvar('ea_botToken', '') != '') {
 
-	client.on('ready', async () => {
-		console.log(`Logged in as ${client.user.tag}!`)
-		client.user.setPresence({ activities: [{ name: `${GetConvar('sv_projectName', GetConvar('sv_hostname', 'default FXServer'))}`, type: 'WATCHING' }], status: 'online' })
-		userID = client.user.id
-		resourcePath = GetResourcePath(GetCurrentResourceName())
-		guild = GetConvar('ea_botGuild', '')
-		EasyAdmin = GetCurrentResourceName()
-		currentVersion = await exports[EasyAdmin].GetVersion()[0]
-		latestVersionInfo = await exports[EasyAdmin].getLatestVersion()
-		RegisterClientCommands(client.user.id)
-		var startupMessage = `**EasyAdmin ${currentVersion}** has started.`
-		if (currentVersion != latestVersionInfo[0]) {
-			startupMessage+=`\nVersion ${latestVersionInfo[0]} is Available!\n Download it from ${latestVersionInfo[1]}`
-		}
-		LogDiscordMessage(startupMessage, 'startup')
+var _botReadyOneTimeSetupDone = false
+client.on('ready', async () => {
+	console.log(`Logged in as ${client.user.tag}!`)
+	client.user.setPresence({ activities: [{ name: `${GetConvar('sv_projectName', GetConvar('sv_hostname', 'default FXServer'))}`, type: 'WATCHING' }], status: 'online' })
+	userID = client.user.id
+	resourcePath = GetResourcePath(GetCurrentResourceName())
+	guild = GetConvar('ea_botGuild', '')
+	EasyAdmin = GetCurrentResourceName()
+
+	if (_botReadyOneTimeSetupDone) { return }
+	_botReadyOneTimeSetupDone = true
+
+	currentVersion = await exports[EasyAdmin].GetVersion()[0]
+	latestVersionInfo = await exports[EasyAdmin].getLatestVersion()
+	RegisterClientCommands(client.user.id)
+	var startupMessage = `**EasyAdmin ${currentVersion}** has started.`
+	if (currentVersion != latestVersionInfo[0]) {
+		startupMessage+=`\nVersion ${latestVersionInfo[0]} is Available!\n Download it from ${latestVersionInfo[1]}`
+	}
+	LogDiscordMessage(startupMessage, 'startup')
 
 		//Ban Management Log System
 		const _banMgmtSent = new Set()
