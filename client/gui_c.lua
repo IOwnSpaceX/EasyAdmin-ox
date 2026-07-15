@@ -19,8 +19,6 @@ settings = {
 	forceShowGUIButtons = false,
 }
 
-
--- generate "slap" table once
 local SlapAmount = {}
 for i = 1, 20 do
 	table.insert(SlapAmount, i)
@@ -39,11 +37,11 @@ end
 playlist = nil
 
 function CheckDutyStatus()
-	-- Use the global IsDutySystemEnabled function for consistency
+
 	local isDutySystemEnabled = IsDutySystemEnabled()
 
 	if _menuPool and _menuPool:IsAnyMenuOpen() then
-		-- Only check duty status if the duty system is enabled
+
 		if isDutySystemEnabled and LocalPlayer.state["easyadmin-ox:clockedIn"] ~= 'yes' then
 			_menuPool:CloseAllMenus()
 			lib.notify({
@@ -82,12 +80,11 @@ RegisterCommand('easyadmin', function(source, args)
 					playerlist = {}
 				end
 			end			if strings and isAdmin then
-				-- Use the global IsDutySystemEnabled function for consistency
+
 				local isDutySystemEnabled = IsDutySystemEnabled()
 				print("Duty system enabled: " .. tostring(isDutySystemEnabled))
 				print("Player clocked in: " .. tostring(LocalPlayer.state["easyadmin-ox:clockedIn"]))
 
-				-- Only verify clock-in status if duty system is enabled
 				if not isDutySystemEnabled or LocalPlayer.state["easyadmin-ox:clockedIn"] == 'yes' then
 					banLength = {}
 
@@ -152,13 +149,12 @@ RegisterCommand('easyadmin', function(source, args)
 	end)
 end, false)
 
-
 RegisterCommand('ea', function(source, args)
 	ExecuteCommand('easyadmin ' .. table.concat(args, " "))
 end)
 
 Citizen.CreateThread(function()
-	if CompendiumHorseObserved then -- https://www.youtube.com/watch?v=r7qovpFAGrQ
+	if CompendiumHorseObserved then
 		RedM = true
 		settings.button = "PhotoModePc"
 	end
@@ -202,7 +198,7 @@ Citizen.CreateThread(function()
 	if settings.updateAvailable then
 		subtitle = "~g~UPDATE " .. settings.updateAvailable .. " AVAILABLE!"
 	elseif settings.alternativeTitle then
-		-- if you remove this code then you're a killjoy, can't we have nice things? just once? it's not like this changes the whole admin menu or how it behaves, its a single subtitle.
+
 		subtitle = settings.alternativeTitle
 	end
 
@@ -218,7 +214,7 @@ Citizen.CreateThread(function()
 			end
 		end
 
-		if RedM then -- since RedM doesn't have the new key bindings yet, watch for button press actively.
+		if RedM then
 			if (RedM and IsControlJustReleased(0, Controls[settings.button])) then
 				ExecuteCommand("easyadmin")
 			end
@@ -252,9 +248,6 @@ reportMenus = {}
 local easterChance = math.random(0, 101)
 local overrideEgg, currentEgg
 
-
-
--- note: we dont support dui banner and dui logo at the same time yet.
 local eastereggs = {
 	pipes = {
 		duibanner = "http://legacy.furfag.de/eggs/pipes",
@@ -297,7 +290,7 @@ function generateTextures()
 		if ((overrideEgg == nil) and easterChance == 100) or (overrideEgg or overrideEgg == false) then
 			local chance = overrideEgg
 			if ((overrideEgg == nil) and easterChance == 100) then
-				-- dirty function to select random easter egg
+
 				local tbl = {}
 				for k, v in pairs(eastereggs) do
 					table.insert(tbl, k)
@@ -360,6 +353,31 @@ function ExecutePluginsFunction(funcName, ...)
 	end
 end
 
+function OpenPlayerMenuById(targetId)
+	targetId = tonumber(targetId)
+	if not targetId then return end
+	if _menuPool then
+		_menuPool:CloseAllMenus()
+	end
+	Wait(50)
+	GenerateMenu()
+	if not playerMenus[tostring(targetId)] then
+		lib.notify({
+			title = "EasyAdmin",
+			description = "Player not found - they may be offline.",
+			type = "error"
+		})
+	else
+		local ourMenu = playerMenus[tostring(targetId)].menu
+		playerMenus[tostring(targetId)].generate(ourMenu)
+		ourMenu:Visible(true)
+	end
+end
+
+RegisterNetEvent("EasyAdmin:OpenPlayerMenu", function(targetId)
+	OpenPlayerMenuById(targetId)
+end)
+
 function GenerateMenu()
 	generateTextures()
 	TriggerServerEvent("EasyAdmin:requestCachedPlayers")
@@ -393,7 +411,6 @@ function GenerateMenu()
 	_menuPool:ControlDisablingEnabled(false)
 	_menuPool:MouseControlsEnabled(false)
 
-
 	if DoesPlayerHavePermissionForCategory(-1, "player") then
 		playermanagement = _menuPool:AddSubMenu(mainMenu, GetLocalisedText("playermanagement"), "", true, true)
 		playermanagement:SetMenuWidthOffset(menuWidth)
@@ -409,14 +426,13 @@ function GenerateMenu()
 	mainMenu:SetMenuWidthOffset(menuWidth)
 	settingsMenu:SetMenuWidthOffset(menuWidth)
 
-	-- util stuff
 	players = {}
 	local localplayers = {}
 
 	if (RedM and settings.infinity) or not RedM then
 		local localplayers = playerlist
 		local temp = {}
-		--table.sort(localplayers)
+
 		for i, thePlayer in pairs(localplayers) do
 			table.insert(temp, thePlayer.id)
 		end
@@ -530,7 +546,7 @@ function GenerateMenu()
 			local description = ""
 
 			if not thePlayer.hideRank then
-				
+
 				if thePlayer.clockedIn ~= nil then
 					description = thePlayer.clockedIn and "~g~Clocked In" or "~r~Clocked Out"
 				end
@@ -543,8 +559,8 @@ function GenerateMenu()
 				end
 			end
 
-			local thisPlayerMenu = _menuPool:AddSubMenu(playermanagement, 
-				"[" .. thePlayer.id .. "] " .. thePlayer.name, 
+			local thisPlayerMenu = _menuPool:AddSubMenu(playermanagement,
+				"[" .. thePlayer.id .. "] " .. thePlayer.name,
 				description, true)
 			if not RedM and thePlayer.developer then
 				thisPlayerMenu.ParentItem:SetRightBadge(23)
@@ -563,7 +579,7 @@ function GenerateMenu()
 				local clockText = (thePlayer.clockedIn == true) and "~g~Clocked In" or "~r~Clocked Out"
 			end
 
-				if GetConvar("ea_enableActionHistory", "true") == "true" and permissions["player.actionhistory.view"] then
+				if not playerMenus[tostring(thePlayer.id)].generated and GetConvar("ea_enableActionHistory", "true") == "true" and permissions["player.actionhistory.view"] then
 						local actionHistoryMenu = _menuPool:AddSubMenu(thisPlayer, GetLocalisedText("actionhistory"),
 							GetLocalisedText("actionhistoryguide"), true)
 						actionHistoryMenu:SetMenuWidthOffset(menuWidth)
@@ -660,7 +676,7 @@ function GenerateMenu()
 						end)
 					end
 
-				if permissions["player.viewdeathkillhistory"] then
+				if not playerMenus[tostring(thePlayer.id)].generated and permissions["player.viewdeathkillhistory"] then
 					do
 						local deathMenu = _menuPool:AddSubMenu(thisPlayer, "~b~Recent Deaths/Kills", "", true)
 						deathMenu:SetMenuWidthOffset(menuWidth)
@@ -847,7 +863,7 @@ function GenerateMenu()
 									lib.notify({
 										title = "Ban Notification",
 										description = thePlayer.name ..
-										" has been banned for " .. BanReason .. " for " .. BanDurationText .. ".",   -- Removed the BanLength (seconds) from the description
+										" has been banned for " .. BanReason .. " for " .. BanDurationText .. ".",
 										type = "success"
 									})
 								else
@@ -1019,7 +1035,6 @@ function GenerateMenu()
 						end
 					end
 
-
 					if permissions["player.slap"] then
 						local thisItem = NativeUI.CreateSliderItem(GetLocalisedText("slapplayer"), SlapAmount, 20, false,
 							false)
@@ -1063,7 +1078,7 @@ function GenerateMenu()
 									TriggerEvent("EasyAdmin:showNotification", GetLocalisedText("nodiscordpresent"))
 								end
 							elseif i == "Toggle Cuff" then
-								TriggerEvent('SEM_InteractionMenu:Cuff', thePlayer.id) -- Your cuffing event should go here (Default: Sem Interaction Menu)
+								TriggerEvent('SEM_InteractionMenu:Cuff', thePlayer.id)
 							elseif i == "Remove All Weapons" then
 								TriggerServerEvent("EasyAdmin:RemoveAllWeapons", thePlayer.id)
 								lib.notify({
@@ -1085,7 +1100,6 @@ function GenerateMenu()
 							end
 						end
 					end
-
 
 					if GetResourceState("es_extended") == "started" and not ESX then
 						local thisItem = NativeUI.CreateItem("~y~[ESX]~s~ Options",
@@ -1195,7 +1209,7 @@ function GenerateMenu()
 					end
 				end
 
-				if report.type == 1 then
+				if report.reported then
 					local thisItem = NativeUI.CreateItem(GetLocalisedText("reported"), GetLocalisedText("entertoopen"))
 					thisItem:RightLabel(formatRightString(report.reportedName))
 					thisMenu:AddItem(thisItem)
@@ -1224,6 +1238,15 @@ function GenerateMenu()
 				thisItem:RightLabel(formatRightString(report.reason, 48))
 				thisMenu:AddItem(thisItem)
 
+				if report.clipLink then
+					local clipItem = NativeUI.CreateItem("Clip", "Press Enter to copy the clip link to your clipboard.")
+					clipItem:RightLabel(formatRightString(report.clipLink, 32))
+					thisMenu:AddItem(clipItem)
+					clipItem.Activated = function(ParentMenu, SelectedItem)
+						copyToClipboard(report.clipLink)
+					end
+				end
+
 				if permissions["player.reports.process"] then
 					local thisItem = NativeUI.CreateItem(GetLocalisedText("closereport"), "")
 					thisMenu:AddItem(thisItem)
@@ -1234,7 +1257,6 @@ function GenerateMenu()
 						GenerateMenu()
 						reportViewer:Visible(true)
 					end
-
 
 					local thisItem = NativeUI.CreateItem(GetLocalisedText("closesimilarreports"),
 						GetLocalisedText("closesimilarreportsguide"))
@@ -1261,11 +1283,10 @@ function GenerateMenu()
 			end
 		end
 
-
 		allPlayers = _menuPool:AddSubMenu(playermanagement, GetLocalisedText("allplayers"), "", true)
 		allPlayers:SetMenuWidthOffset(menuWidth)
 		if permissions["player.teleport.everyone"] then
-			-- "all players" function
+
 			local thisItem = NativeUI.CreateItem(GetLocalisedText("teleporttome"), GetLocalisedText("teleporttomeguide"))
 			allPlayers:AddItem(thisItem)
 			thisItem.Activated = function(ParentMenu, SelectedItem)
@@ -1273,7 +1294,6 @@ function GenerateMenu()
 				TriggerServerEvent("EasyAdmin:TeleportPlayerToCoords", -1, pCoords)
 			end
 		end
-
 
 		cachedListGenerated = false
 
@@ -1310,7 +1330,7 @@ function GenerateMenu()
 									thisBanItem.Activated = function(ParentMenu, SelectedItem)
 									    _menuPool:CloseAllMenus()
 									    Citizen.Wait(200)
-									
+
 									    local input = lib.inputDialog('Ban Details', {
 									        { type = 'input',  label = 'Reason for Ban', description = 'Provide a reason for banning the player.',                           required = true, min = 3,   max = 128 },
 									        {
@@ -1330,17 +1350,17 @@ function GenerateMenu()
 									        },
 									        { type = 'number', label = 'Ban Duration',   description = 'Specify the length of the ban time. If Permanent IGNORE Box Below!', min = 1,         max = 300, step = 10, default = 0, required = true }
 									    })
-									
+
 									    if not input then return end
-									
+
 									    local BanReason = input[1]
 									    local BanDurationType = input[2]
 									    local BanDurationAmount = tonumber(input[3]) or 0
-									
+
 									    if not BanReason or BanReason == "" then
 									        BanReason = GetLocalisedText("noreason")
 									    end
-									
+
 									    local BanLength
 									    if BanDurationType == 'permanent' then
 									        BanLength = 10444633200
@@ -1355,12 +1375,12 @@ function GenerateMenu()
 									    else
 									        return
 									    end
-									
+
 									    local banSuccess, banErr = pcall(function()
 									        TriggerServerEvent("EasyAdmin:offlinebanPlayer", cachedplayer.id, BanReason,
 									            BanLength, cachedplayer.name)
 									    end)
-									
+
 									    if banSuccess then
 									        lib.notify({
 									            title = 'Player Banned',
@@ -1376,7 +1396,7 @@ function GenerateMenu()
 									            duration = 5000
 									        })
 									    end
-									
+
 									    Citizen.Wait(800)
 									    GenerateMenu()
 									    playermanagement:Visible(true)
@@ -1404,7 +1424,6 @@ function GenerateMenu()
 			end
 		end
 	end
-
 
 	if DoesPlayerHavePermissionForCategory(-1, "server") then
 		if permissions["server.announce"] then
@@ -1578,7 +1597,6 @@ function GenerateMenu()
 			_menuPool:ControlDisablingEnabled(false)
 			_menuPool:MouseControlsEnabled(false)
 
-
 			if banlist[banId].banid then
 				local thisItem = NativeUI.CreateItem("Ban ID: " .. banlist[banId].banid, "")
 				mainMenu:AddItem(thisItem)
@@ -1591,7 +1609,6 @@ function GenerateMenu()
 			mainMenu:AddItem(thisItem)
 			thisItem.Activated = function(ParentMenu, SelectedItem)
 			end
-
 
 			if banlist[banId].name then
 				local thisItem = NativeUI.CreateItem("Name: " .. banlist[banId].name, "")
@@ -1607,7 +1624,6 @@ function GenerateMenu()
 				end
 			end
 
-
 			if banlist[banId].banner then
 				local thisItem = NativeUI.CreateItem("Banner: " .. banlist[banId].banner, "")
 				mainMenu:AddItem(thisItem)
@@ -1621,7 +1637,6 @@ function GenerateMenu()
 					end
 				end
 			end
-
 
 			if banlist[banId].expireString then
 				local thisItem = NativeUI.CreateItem("Expires: " .. banlist[banId].expireString, "")
@@ -1637,7 +1652,6 @@ function GenerateMenu()
 					end
 				end
 			end
-
 
 			for _, identifier in pairs(banlist[banId].identifiers) do
 				if not (GetConvar("ea_IpPrivacy", "true") == "true" and string.split(identifier, ":")[1] == "ip") then
@@ -1673,7 +1687,6 @@ function GenerateMenu()
 				mainMenu:Visible(true)
 			end
 		end
-
 
 		local thisItem = NativeUI.CreateItem(GetLocalisedText("searchbans"), "")
 		unbanPlayer:AddItem(thisItem)
@@ -1727,7 +1740,6 @@ function GenerateMenu()
 					type = "fail"
 				})
 
-
 				GenerateMenu()
 				unbanPlayer:Visible(true)
 			end
@@ -1745,7 +1757,6 @@ function GenerateMenu()
 				end
 			end
 		end
-
 
 		if #banlist > (banlistPage * 10) then
 			local thisItem = NativeUI.CreateItem(GetLocalisedText("lastpage"), "")
@@ -1792,7 +1803,6 @@ function GenerateMenu()
 		end
 	end
 
-
 	if DoesPlayerHavePermissionForCategory(-1, "server") then
 		local sl = {}
 		if permissions["server.cleanup.cars"] then
@@ -1838,12 +1848,11 @@ function GenerateMenu()
 					local cleanType = input[1]
 					local cleanRadius = input[2]
 					local deepClean = input[3]
-					local playerName = GetPlayerName(PlayerId()) -- Get the player's name
+					local playerName = GetPlayerName(PlayerId())
 
 					if cleanType and cleanRadius then
 						TriggerServerEvent("EasyAdmin:requestCleanup", cleanType, cleanRadius, deepClean)
 
-						-- Send a notification if it's a global cleanup
 						if cleanRadius == 'global' then
 							local message = string.format("%s has performed a global cleanup of %s.", playerName,
 								GetLocalisedText(cleanType))
@@ -1860,7 +1869,6 @@ function GenerateMenu()
 			end
 		end
 
-
 		if permissions["server.permissions.read"] then
 			permissionEditor = _menuPool:AddSubMenu(servermanagement, GetLocalisedText("permissioneditor"),
 				GetLocalisedText("permissioneditorguide"), true)
@@ -1874,7 +1882,6 @@ function GenerateMenu()
 
 			editAces = _menuPool:AddSubMenu(permissionEditor, GetLocalisedText("aces"), "", true)
 			editAces:SetMenuWidthOffset(thisMenuWidth)
-
 
 			if permissions["server.permissions.read"] and permissions["server.permissions.write"] then
 				local thisMenu = _menuPool:AddSubMenu(editAces, GetLocalisedText("addace"), "", true)
@@ -1913,7 +1920,6 @@ function GenerateMenu()
 				tempAce[3] = "allow"
 				thisMenu:AddItem(thisItem)
 				thisItem:Enabled(false)
-
 
 				local thisItem = NativeUI.CreateItem(GetLocalisedText("addace"), GetLocalisedText("addaceguide"))
 				thisMenu:AddItem(thisItem)
@@ -1972,7 +1978,6 @@ function GenerateMenu()
 					thisItem:Enabled(false)
 				end
 
-
 				local thisItem = NativeUI.CreateItem(GetLocalisedText("deletepermission"),
 					GetLocalisedText("deletepermissionguide"))
 				thisMenu:AddItem(thisItem)
@@ -1983,7 +1988,6 @@ function GenerateMenu()
 					thisMenu:GoBack()
 				end
 			end
-
 
 			editPrincipals = _menuPool:AddSubMenu(permissionEditor, GetLocalisedText("principals"), "", true)
 			editPrincipals:SetMenuWidthOffset(thisMenuWidth)
@@ -2019,7 +2023,7 @@ function GenerateMenu()
 					end
 				end
 
-				local thisItem = NativeUI.CreateItem(GetLocalisedText("addprincipal"), GetLocalisedText("addaceguide")) -- the use of addaceguide is intentional.
+				local thisItem = NativeUI.CreateItem(GetLocalisedText("addprincipal"), GetLocalisedText("addaceguide"))
 				thisMenu:AddItem(thisItem)
 				thisItem.Activated = function(ParentMenu, SelectedItem)
 					table.insert(add_principals, tempPrincipal)
@@ -2111,7 +2115,6 @@ function GenerateMenu()
 			end
 		end
 
-
 		TriggerEvent("EasyAdmin:BuildServerManagementOptions")
 		for i, plugin in pairs(plugins) do
 			if plugin.functions.serverMenu then
@@ -2154,7 +2157,6 @@ function GenerateMenu()
 			end
 		end
 	end
-
 
 	if permissions["player.ban.view"] then
 		local thisItem = NativeUI.CreateItem(GetLocalisedText("refreshbanlist"), GetLocalisedText("refreshbanlistguide"))
@@ -2239,7 +2241,6 @@ function GenerateMenu()
 	thisi = nil
 	sl = nil
 
-
 	local thisItem = NativeUI.CreateItem(GetLocalisedText("resetmenuOffset"), "")
 	settingsMenu:AddItem(thisItem)
 	thisItem.Activated = function(ParentMenu, SelectedItem)
@@ -2256,7 +2257,6 @@ function GenerateMenu()
 			TriggerServerEvent("EasyAdmin:SetAnonymous", checked_)
 		end
 	end
-
 
 	local thisItem = NativeUI.CreateCheckboxItem(GetLocalisedText("screenreader"),
 		GetResourceKvpInt('ea_tts') == 1 and true or false, GetLocalisedText("screenreaderguide"))
@@ -2296,7 +2296,6 @@ function GenerateMenu()
 		end
 	end
 
-
 	TriggerEvent("EasyAdmin:BuildSettingsOptions")
 	for i, plugin in pairs(plugins) do
 		if plugin.functions.settingsMenu then
@@ -2310,7 +2309,7 @@ function GenerateMenu()
 	_menuPool:ControlDisablingEnabled(false)
 	_menuPool:MouseControlsEnabled(false)
 
-	_menuPool:RefreshIndex() -- refresh indexes
+	_menuPool:RefreshIndex()
 end
 
 function DrawPlayerInfoLoop()
@@ -2319,7 +2318,7 @@ function DrawPlayerInfoLoop()
 			Wait(0)
 
 			local text = {}
-			-- cheat checks
+
 			local targetPed = GetPlayerPed(drawTarget)
 			if (not RedM) then
 				local targetGod = GetPlayerInvincible(drawTarget)
@@ -2331,14 +2330,13 @@ function DrawPlayerInfoLoop()
 				if not CanPedRagdoll(targetPed) and not IsPedInAnyVehicle(targetPed, false) and (GetPedParachuteState(targetPed) == -1 or GetPedParachuteState(targetPed) == 0) and not IsPedInParachuteFreeFall(targetPed) then
 					table.insert(text, GetLocalisedText("antiragdoll"))
 				end
-				-- health info
+
 				table.insert(text,
 					GetLocalisedText("health") .. ": " .. GetEntityHealth(targetPed) ..
 					"/" .. GetEntityMaxHealth(targetPed))
 
 				table.insert(text, GetLocalisedText("armor") .. ": " .. GetPedArmour(targetPed))
 
-				-- misc info
 				table.insert(text, GetLocalisedText("wantedlevel") .. ": " .. GetPlayerWantedLevel(drawTarget))
 				table.insert(text, GetLocalisedText("exitspectator"))
 
@@ -2383,16 +2381,16 @@ function DrawPlayerInfoLoop()
 				local targetx,targety,targetz = table.unpack(GetEntityCoords(targetPed, false))
 				spectatePlayer(targetPed,targetPlayer,GetPlayerName(targetPlayer))
 				TriggerEvent('EasyAdmin:FreezePlayer', false)
-				--SetEntityCoords(PlayerPedId(), oldCoords.x, oldCoords.y, oldCoords.z, 0, 0, 0, false)
+
 				if not RedM then
 					TriggerEvent('EasyAdmin:FreezePlayer', false)
 				end
 
 				StopDrawPlayerInfo()
 				TriggerEvent("ox_lib:notify", {
-					title = "Spectating Stopped", -- You can change the title
+					title = "Spectating Stopped",
 					description = GetLocalisedText("stoppedSpectating"),
-					type = "info"  -- Adjust the type as needed, e.g., "success", "error", "info"
+					type = "info"
 				})
 
 				TriggerServerEvent("EasyAdmin:resetBucket", MyBucket)
@@ -2406,7 +2404,7 @@ function DrawPlayerInfoLoop()
 
 			local targetPed = GetPlayerPed(drawTarget)
 			if not DoesEntityExist(targetPed) and drawServerId ~= 0 then
-				-- player no longer exists, lets contact the server to see if they changed bucket?
+
 				TriggerServerEvent("EasyAdmin:requestBucket", drawServerId)
 			end
 		end
