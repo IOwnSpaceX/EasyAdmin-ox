@@ -1,4 +1,3 @@
-/*eslint no-global-assign: "off", no-unused-vars: "off"*/
 process.on('uncaughtException', function(err) {
 	console.log('Caught exception: ', err.stack)
 })
@@ -45,7 +44,6 @@ client = new Client({
 })
 client.commands = new Collection()
 
-// functions.js
 async function prepareGenericEmbed(message,feature,colour,title,image,customAuthor,description,timestamp) {
 	if (feature && await exports[EasyAdmin].isWebhookFeatureExcluded(feature)) {
 		return
@@ -61,7 +59,7 @@ async function prepareGenericEmbed(message,feature,colour,title,image,customAuth
 	if (title) {
 		embed.setTitle(title)
 	} else if (message && !description) {
-		// no-op: message goes to description now
+
 	}
 	if (description) {
 		embed.setDescription(description)
@@ -161,7 +159,6 @@ function format(str, ...args) {
 	return formatted
 }
 
-// logging.js
 botLogForwards = []
 async function addBotLogForwarding(source,args) {
 	var player=source
@@ -203,7 +200,6 @@ async function LogDiscordMessage(text, feature, colour) {
 }
 exports('LogDiscordMessage', LogDiscordMessage)
 
-// roles.js
 async function syncDiscordRoles(player) {
 	if (!EasyAdmin) {return}
 	var user
@@ -247,10 +243,9 @@ if (GetConvar('ea_botToken', '') != '') {
 	})
 }
 
-// reports.js
 var reports = []
 
-function generateReportEmbed(report, disabled, closed) {
+function buildReportEmbed(report, closed) {
 	var embed = new EmbedBuilder()
 		.setTimestamp()
 	if (closed) {
@@ -267,24 +262,116 @@ function generateReportEmbed(report, disabled, closed) {
 		{name:'Reason', value: `\`\`\`\n${report.reason}\`\`\``},
 		{name:'Report ID', value: `#${report.id}`, inline: true},
 		{name:'Claimed by', value:`${(report.claimedName || 'Noone')}`, inline: true}])
-	return {embeds: [embed]}
+	if (report.reported) {
+		var targetValue = `${report.reportedName || 'Unknown'} (ID: ${report.reported})`
+		if (report.reportedDiscord) {
+			targetValue += ` - <@${report.reportedDiscord}>`
+		}
+		embed.addFields([{name:'Regarding Player', value: targetValue, inline: true}])
+	}
+	if (report.clipLink) {
+		embed.addFields([{name:'Clip', value: `[Open Clip](${report.clipLink})`}])
+	}
+	return embed
+}
+
+function generateReportEmbed(report, disabled, closed) {
+
+	return { embeds: [buildReportEmbed(report, closed)] }
+}
+
+function buildClaimDMActionRow(reportId, opts) {
+	opts = opts || {}
+	if (!ActionRowBuilder || !ButtonBuilder) return null
+	var buttons = []
+	if (opts.showTeleport) {
+		buttons.push(
+			new ButtonBuilder()
+				.setCustomId(`calladmin_tpfreeze_${reportId}`)
+				.setLabel('📍 Teleport & Freeze Player')
+				.setStyle((ButtonStyle && ButtonStyle.Danger) || 4)
+				.setDisabled(!!opts.teleportDisabled)
+		)
+		buttons.push(
+			new ButtonBuilder()
+				.setCustomId(`calladmin_openpage_${reportId}`)
+				.setLabel('🧑 Open Player Page')
+				.setStyle((ButtonStyle && ButtonStyle.Primary) || 1)
+				.setDisabled(!!opts.openPageDisabled)
+		)
+	}
+	buttons.push(
+		new ButtonBuilder()
+			.setCustomId(`calladmin_close_${reportId}`)
+			.setLabel('✅ Close Report')
+			.setStyle((ButtonStyle && ButtonStyle.Success) || 3)
+			.setDisabled(!!opts.closeDisabled)
+	)
+	return new ActionRowBuilder().addComponents(...buttons)
 }
 
 async function logNewReport(report) {
 	if (GetConvar('ea_botToken', '') != '') {
 		var reportId = report.id
 		reports[reportId] = report
-		var reportMessage = generateReportEmbed(report)
 		var channel = await client.channels.cache.get(GetConvar('ea_botLogChannel', ''))
 		if (report.type == 1 && botLogForwards['report']) {
 			channel = await client.channels.cache.get(botLogForwards['report'])
 		} else if (report.type == 0 && botLogForwards['calladmin']) {
 			channel = await client.channels.cache.get(botLogForwards['calladmin'])
 		}
-		var msg = await channel.send(reportMessage)
+		if (!channel) return
+
+		var payload = { embeds: [buildReportEmbed(report)] }
+		if (report.clipLink) {
+			payload.content = report.clipLink
+		}
+		var msg = await channel.send(payload)
 		reports[reportId].msg = msg
 	} else {
 		return false
+	}
+}
+
+async function dmClaimedReportDetails(report) {
+	if (!report.claimed) return
+	try {
+		var staffUser = await getDiscordAccountFromPlayer(report.claimed)
+		if (!staffUser) return
+
+		var dmEmbed = new EmbedBuilder()
+			.setColor(0x57F287)
+			.setTitle(report.type == 1 ? '📋 You claimed a Player Report' : '📋 You claimed an Admin Call')
+			.setDescription(`\`\`\`\n${report.reason}\n\`\`\``)
+			.addFields({ name: 'Report ID', value: `#${report.id}`, inline: true })
+			.setTimestamp()
+			.setFooter({ text: 'EasyAdmin' })
+
+		dmEmbed.addFields({ name: report.type == 1 ? 'Reporter' : 'Caller', value: `${report.reporterName}`, inline: true })
+
+		if (report.reported) {
+			var targetValue = `${report.reportedName || 'Unknown'} (ID: ${report.reported})`
+			if (report.reportedDiscord) {
+				targetValue += ` - <@${report.reportedDiscord}>`
+			}
+			dmEmbed.addFields({ name: 'Regarding Player', value: targetValue, inline: true })
+		}
+		if (report.clipLink) {
+			dmEmbed.addFields({ name: 'Clip', value: `[Open Clip](${report.clipLink})` })
+		}
+
+		var dmPayload = { embeds: [dmEmbed] }
+		var row = buildClaimDMActionRow(report.id, { showTeleport: !!report.reported })
+		if (row) {
+			dmPayload.components = [row]
+		}
+		await staffUser.send(dmPayload)
+
+		if (report.clipLink) {
+			staffUser.send({ content: report.clipLink }).catch(() => {})
+		}
+	} catch (error) {
+		console.error('[EasyAdmin] Failed to DM the claiming staff member the report details:', error)
 	}
 }
 
@@ -299,7 +386,12 @@ on('EasyAdmin:reportClaimed', async function (reportdata) {
 		reports[reportId].claimedName = reportdata.claimedName
 		let reportMessage = generateReportEmbed(reports[reportId], true)
 		reports[reportId].msg.edit(reportMessage)
+	} else {
+
+		reports[reportId] = reportdata
 	}
+
+	dmClaimedReportDetails(reportdata)
 })
 
 on('EasyAdmin:reportRemoved', async function(reportdata) {
@@ -311,7 +403,6 @@ on('EasyAdmin:reportRemoved', async function(reportdata) {
 	}
 })
 
-// player_events.js
 if (GetConvar('ea_botToken', '') != '') {
 
 	on('playerJoining', function () {
@@ -342,7 +433,6 @@ if (GetConvar('ea_botToken', '') != '') {
 
 }
 
-// chat_bridge.js
 try {
 	knownAvatars = {}
 	exports['chat'].registerMessageHook(async function(source, outMessage) {
@@ -411,7 +501,6 @@ on('playerDropped', () => {
 	knownAvatars[global.source] = undefined
 })
 
-// server_status.js
 var statusMessage
 var startTimestamp = new Date()
 
@@ -528,7 +617,6 @@ client.on('messageCreate', async msg => {
 setTimeout(updateServerStatus, 10000)
 setInterval(updateServerStatus, 180000)
 
-// main bot logic
 var _slashCommandListenerRegistered = false
 async function RegisterClientCommands(clientId) {
 	const fs = require('fs')
@@ -597,7 +685,6 @@ client.on('ready', async () => {
 	}
 	LogDiscordMessage(startupMessage, 'startup')
 
-		//Ban Management Log System
 		const _banMgmtSent = new Set()
 
 		async function resolveDiscordMemberByTag(tag) {
@@ -769,7 +856,6 @@ client.on('ready', async () => {
 			const banId  = parts.slice(2).join('_')
 			const actor  = { tag: interaction.user.tag, id: interaction.user.id }
 
-			//APPROVE
 			if (action === 'approve') {
 				const ban = await exports[EasyAdmin].fetchBan(banId)
 				const banData = ban || { banid: banId, name: 'Unknown', banner: 'Unknown', reason: 'N/A', expire: 10444633200 }
@@ -801,7 +887,6 @@ client.on('ready', async () => {
 				return
 			}
 
-			//REVOKE
 			if (action === 'revoke') {
 				const ban = await exports[EasyAdmin].fetchBan(banId)
 				const ret = await exports[EasyAdmin].unbanPlayer(banId)
@@ -838,7 +923,6 @@ client.on('ready', async () => {
 				return
 			}
 
-			//REMIND FOR PROOF
 			if (action === 'proof') {
 				const ban = await exports[EasyAdmin].fetchBan(banId)
 
@@ -894,6 +978,140 @@ client.on('ready', async () => {
 
 		client.on('interactionCreate', handleBanManagementButton)
 		console.log('[EasyAdmin BanMgmt] Ban management button handler registered.')
+
+		async function handleCallAdminDMButton(interaction) {
+			if (!interaction.isButton()) return
+			if (!interaction.customId.startsWith('calladmin_tpfreeze_')) return
+
+			const reportId = interaction.customId.replace('calladmin_tpfreeze_', '')
+			const report = reports[reportId]
+
+			if (!report || !report.reported) {
+				return interaction.reply({ content: 'This report no longer has target player info.', ephemeral: true }).catch(() => {})
+			}
+			if (!report.claimed) {
+				return interaction.reply({ content: 'This report has not been claimed.', ephemeral: true }).catch(() => {})
+			}
+
+			let claimerDiscord
+			try {
+				claimerDiscord = await getDiscordAccountFromPlayer(report.claimed)
+			} catch (_) {}
+			if (!claimerDiscord || claimerDiscord.id !== interaction.user.id) {
+				return interaction.reply({ content: 'Only the staff member who claimed this report can use this button.', ephemeral: true }).catch(() => {})
+			}
+
+			const adminPlayer = await getPlayerFromDiscordAccount(interaction.user)
+			if (!adminPlayer) {
+				return interaction.reply({ content: 'You need to be online and logged into the server to use this.', ephemeral: true }).catch(() => {})
+			}
+
+			if (!GetPlayerName(report.reported)) {
+				return interaction.reply({ content: 'That player is no longer connected to the server.', ephemeral: true }).catch(() => {})
+			}
+
+			let teleported = false
+			let frozen = false
+			try {
+				teleported = await exports[EasyAdmin].teleportPlayerToPlayer(adminPlayer.id, report.reported)
+				frozen = await exports[EasyAdmin].freezePlayer(report.reported, true)
+			} catch (error) {
+				console.error('[EasyAdmin] Teleport & Freeze button failed:', error)
+			}
+
+			if (teleported && frozen) {
+				await interaction.reply({ content: `✅ Teleported you to **${report.reportedName || 'the player'}** and froze them in place.`, ephemeral: true }).catch(() => {})
+			} else {
+				await interaction.reply({ content: '⚠️ Could not complete that - the player may be immune, or no longer online.', ephemeral: true }).catch(() => {})
+			}
+		}
+
+		async function handleCallAdminCloseButton(interaction) {
+			if (!interaction.isButton()) return
+			if (!interaction.customId.startsWith('calladmin_close_')) return
+
+			const reportId = interaction.customId.replace('calladmin_close_', '')
+			const report = reports[reportId]
+
+			if (!report) {
+				return interaction.reply({ content: 'This report is already closed or no longer exists.', ephemeral: true }).catch(() => {})
+			}
+			if (!report.claimed) {
+				return interaction.reply({ content: 'This report has not been claimed.', ephemeral: true }).catch(() => {})
+			}
+
+			let claimerDiscord
+			try {
+				claimerDiscord = await getDiscordAccountFromPlayer(report.claimed)
+			} catch (_) {}
+			if (!claimerDiscord || claimerDiscord.id !== interaction.user.id) {
+				return interaction.reply({ content: 'Only the staff member who claimed this report can close it.', ephemeral: true }).catch(() => {})
+			}
+
+			let closed = false
+			try {
+				closed = await exports[EasyAdmin].closeReport(reportId, interaction.user.tag)
+			} catch (error) {
+				console.error('[EasyAdmin] Close report button failed:', error)
+			}
+
+			const disabledRow = buildClaimDMActionRow(reportId, { showTeleport: !!report.reported, teleportDisabled: true, openPageDisabled: true, closeDisabled: true })
+			try {
+				await interaction.update({ components: disabledRow ? [disabledRow] : [] })
+				await interaction.followUp({ content: closed ? '✅ Report closed.' : '⚠️ Could not close the report (it may have already been closed).', ephemeral: true }).catch(() => {})
+			} catch (_) {
+				await interaction.reply({ content: closed ? '✅ Report closed.' : '⚠️ Could not close the report.', ephemeral: true }).catch(() => {})
+			}
+		}
+
+		async function handleCallAdminOpenPageButton(interaction) {
+			if (!interaction.isButton()) return
+			if (!interaction.customId.startsWith('calladmin_openpage_')) return
+
+			const reportId = interaction.customId.replace('calladmin_openpage_', '')
+			const report = reports[reportId]
+
+			if (!report || !report.reported) {
+				return interaction.reply({ content: 'This report no longer has target player info.', ephemeral: true }).catch(() => {})
+			}
+			if (!report.claimed) {
+				return interaction.reply({ content: 'This report has not been claimed.', ephemeral: true }).catch(() => {})
+			}
+
+			let claimerDiscord
+			try {
+				claimerDiscord = await getDiscordAccountFromPlayer(report.claimed)
+			} catch (_) {}
+			if (!claimerDiscord || claimerDiscord.id !== interaction.user.id) {
+				return interaction.reply({ content: 'Only the staff member who claimed this report can use this button.', ephemeral: true }).catch(() => {})
+			}
+
+			const adminPlayer = await getPlayerFromDiscordAccount(interaction.user)
+			if (!adminPlayer) {
+				return interaction.reply({ content: 'You need to be online and logged into the server to use this.', ephemeral: true }).catch(() => {})
+			}
+
+			if (!GetPlayerName(report.reported)) {
+				return interaction.reply({ content: 'That player is no longer connected to the server.', ephemeral: true }).catch(() => {})
+			}
+
+			let opened = false
+			try {
+				opened = await exports[EasyAdmin].openPlayerMenuForAdmin(adminPlayer.id, report.reported)
+			} catch (error) {
+				console.error('[EasyAdmin] Open Player Page button failed:', error)
+			}
+
+			if (opened) {
+				await interaction.reply({ content: `✅ Opened **${report.reportedName || 'the player'}**'s page in your in-game menu.`, ephemeral: true }).catch(() => {})
+			} else {
+				await interaction.reply({ content: '⚠️ Could not open that player\'s page - they may no longer be online.', ephemeral: true }).catch(() => {})
+			}
+		}
+
+		client.on('interactionCreate', handleCallAdminDMButton)
+		client.on('interactionCreate', handleCallAdminOpenPageButton)
+		client.on('interactionCreate', handleCallAdminCloseButton)
 	})
 
 	client.on('debug', function(info){
